@@ -1,0 +1,464 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课程10 四足机器人的OpenCV应用</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1><a id="10_OpenCV_1"></a>课程10 四足机器人的OpenCV应用</h1>
+<h2><a id="_3"></a>课程概述</h2>
+<p>在这个课程中，你将会学习Mini Pupper结合OpenCV推出的强大相机OAK-D-Lite，应用轻量级神经网络MobileNet实现目标跟踪的功能。</p>
+<ul>
+<li>
+<p>演示1：启动stereo demo<br>
+<img src="https://img-blog.csdnimg.cn/5b7a7e8f210748b8addd92047458cfc7.png" alt="在这里插入图片描述"></p>
+</li>
+<li>
+<p>演示2：mini pupper的目标跟踪<br>
+<img src="https://img-blog.csdnimg.cn/6a48ece0878e458cbaea5e8646167585.gif" alt="**此处有动画演示，存储在课程的文件夹中**"></p>
+</li>
+</ul>
+<h2><a id="_15"></a>关于课程</h2>
+<p>按照规划，本课程需要花费大约2小时来完成，目标受众为四足机器人开发爱好者。<br>
+<strong>note</strong><br>
+本课程是基于<a href="https://www.mangdang.net/">Mangdang</a>的Mini Pupper系列产品搭建的。<br>
+本课程涉及的源代码托管在Github，你可以<a href="https://github.com/mangdangroboticsclub/mini_pupper_ros/tree/ros2">点击此处访问</a>。</p>
+<h2><a id="_21"></a>学习目标<strong>此处有动画演示，存储在课程的文件夹中</strong></h2>
+<p>在这个课程中，你将会学到：</p>
+<ul>
+<li>如何配置OpenCV官方的相机硬件OAK-D-Lite</li>
+<li>如何使用OAK-D-Lite</li>
+<li>如何制作一个mini pupper的目标跟踪示例</li>
+</ul>
+<h2><a id="_26"></a>课程细节</h2>
+<p>本课程将使用以下组件：</p>
+<ul>
+<li><a href="https://ubuntu.com/">Ubuntu</a>是一个以桌面应用为主的Linux操作系统，具有良好的版本维护和社区环境</li>
+<li><a href="https://www.ros.org/">ROS</a>是一个机器人通用的开发的平台，可帮助您方便地构建机器人应用程序</li>
+<li><a href="http://wiki.ros.org/rviz/UserGuide">Rviz</a>是ROS体系下的 3D 数据可视化工具</li>
+<li><a href="https://opencv.org/">OpenCV</a> is an open-source computer vision and machine learning software library designed to help developers create applications for image and video processing.</li>
+<li><a href="https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet">MobileNet</a> is a type of convolutional neural network architecture designed for efficient processing on mobile and embedded devices.</li>
+</ul>
+<h2><a id="_34"></a>准备材料</h2>
+<p>在开始这个课程前，你需要具备以下知识：</p>
+<ul>
+<li><strong>对ROS的基本了解</strong></li>
+</ul>
+<p>在开始这个课程前，你需要准备好以下材料：</p>
+<ul>
+<li><strong>安装有Ubuntu22.04系统并配置好ROS2 Humble环境的笔记本电脑</strong></li>
+<li><strong>能够访问Github等网站的良好网络状态</strong></li>
+<li><strong>OAK-D-Lite相机</strong></li>
+</ul>
+<p>Note: 你可以通过Mangdang购买原装正品的OAK-D-Lite相机</p>
+<h1><a id="_47"></a>引言</h1>
+<p>在本文中，我们将使用OpenCV的OAK-D-Lite深度相机配合mini pupper来实现一个简单的目标追踪示例。该示例使用深度相机获取场景中的图像，应用了OpenCV图像处理库，并使用简单的目标追踪算法，使得mini pupper的视线追踪你设置的目标，比如人类和瓶子。通过这个示例，我们可以了解到如何使用OpenCV和OAK-D-Lite深度相机实现目标追踪，以及深度相机在计算机视觉应用中的作用。</p>
+<h2><a id="_54"></a>整体步骤</h2>
+<ol>
+<li><a href="#step1">配置OAK-D-Lite</a></li>
+<li><a href="#step2">使用OAK-D-Lite相机</a></li>
+<li><a href="#step3">了解MobileNet</a></li>
+<li><a href="#step4">配置mini pupper环境</a></li>
+<li><a href="#step5">运行mini pupper的目标追踪示例</a></li>
+</ol>
+<h1><a id="1OAKDLite_63"></a>任务1：配置并使用OAK-D-Lite深度相机</h1>
+<p><span id="step1"></span></p>
+<h2><a id="OAKDLite_67"></a>第一步：配置OAK-D-Lite</h2>
+<p>在运行深度相机前，需要对相机作配置。</p>
+<ul>
+<li>Install dependencies</li>
+</ul>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> <span class="token function">wget</span> -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/main/install_dependencies.sh <span class="token operator">|</span> <span class="token function">sudo</span> <span class="token function">bash</span>
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/68742cd47acb4b65a0d8db847fe1a94e.png" alt="请添加图片描述"></p>
+<p><strong>图片1：安装依赖</strong></p>
+<ul>
+<li>install OpenCV</li>
+</ul>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> libopencv-dev
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/ff78cb8e33484adaa55801e2e3f8e8bb.png" alt="请添加图片描述"></p>
+<p><strong>图片2：安装OpenCV库</strong></p>
+<ul>
+<li>clone depthai-ros</li>
+</ul>
+<p>DepthAI-ROS is a set of ROS (Robot Operating System) nodes that enable integration of the DepthAI hardware into ROS-based robotic systems. DepthAI is a platform that combines a depth camera with a neural compute device to enable depth perception and AI inference on edge devices.</p>
+<p>The DepthAI-ROS nodes provide a set of ROS interfaces for accessing the depth and AI inference capabilities of the DepthAI hardware. The nodes can be used to perform tasks such as object detection, object tracking, and depth mapping, which are essential for many robotic applications.</p>
+<p>Overall, DepthAI-ROS provides an easy-to-use interface for integrating DepthAI into ROS-based robotic systems, enabling developers to build more intelligent and capable robots.</p>
+<pre><code class="prism language-bash"><span class="token function">mkdir</span> -p dai_ws/src
+<span class="token builtin class-name">cd</span> dai_ws/src
+<span class="token function">git</span> clone --branch humble https://github.com/luxonis/depthai-ros.git
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/0baf59a576854a6ba0ace7ca29a43620.png" alt="请添加图片描述"></p>
+<p><strong>图片3：克隆depthai-ros库</strong></p>
+<ul>
+<li>install package dependencies</li>
+</ul>
+<pre><code class="prism language-bash"><span class="token builtin class-name">cd</span> <span class="token punctuation">..</span>
+rosdep <span class="token function">install</span> --from-paths src --ignore-src -r -y
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/d8a3aab14de14af09f47dcd1c09e410d.png" alt="请添加图片描述"></p>
+<p><strong>图片4：安装相关包依赖</strong></p>
+<ul>
+<li>build depthai-ros</li>
+</ul>
+<pre><code class="prism language-bash"><span class="token builtin class-name">source</span> /opt/ros/humble/setup.bash
+<span class="token assign-left variable">MAKEFLAGS</span><span class="token operator">=</span><span class="token string">"-j1 -l1"</span> colcon build
+<span class="token builtin class-name">echo</span> <span class="token string">"source ~/dai_ws/install/setup.bash"</span> <span class="token operator">&gt;&gt;</span> ~/.bashrc
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/8bfd0a99d44d48de9ee28544283fb827.png" alt="请添加图片描述"></p>
+<p><strong>图片5：编译depthai-ros</strong><br>
+Note: If you are using a lower end PC or RPi, standard building may take a lot of RAM and clog your PC. To avoid that, you can use build.sh command from your workspace (it just wraps colcon commands): ./src/depthai-ros/build.sh</p>
+<p><span id="step2"></span></p>
+<h2><a id="_OAKDLite_123"></a>第二步： 使用OAK-D-Lite相机</h2>
+<p>在确认已经完成task1中的所有配置，并且没有出现错误时，开始使用OAK-D-Lite相机。</p>
+<ul>
+<li>
+<p>连接相机与USB3.0数据线<br>
+值得注意的是，数据线应当使用USB3.0及以上版本，当使用USB2.0时通常会发生很多错误。</p>
+</li>
+<li>
+<p>连接相机与电脑/mini pupper<br>
+如果你希望直接使用电脑连接深度相机，将USB3.0线的另一端连接到电脑。如果你希望使用mini pupper连接深度相机，将USB3.0线的另一端连接到mini pupper上的USB3.0端口，端口的内部通常是蓝色的。我们建议你在mini pupper上使用OAK-D-Lite，因为在后续的目标跟踪的任务中将用到mini pupper的实体。</p>
+</li>
+<li>
+<p>启动stereo.launch.py</p>
+</li>
+</ul>
+<pre><code class="prism language-bash">ros2 launch depthai_examples stereo.launch.py camera_model:<span class="token operator">=</span>OAK-D-LITE
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/46677eb73fa34a60b084640442463b28.png" alt="请添加图片描述"></p>
+<p><strong>图片6：启动stereo</strong></p>
+<p>你将观察到OAK-D-Lite发布的Stereo信息，并在RViz中可视化Stereo信息。<br>
+<img src="https://img-blog.csdnimg.cn/6c55897c0e8041aa94e118cf7e1c7df0.png" alt="在这里插入图片描述"></p>
+<p><strong>图片7：Stereo信息</strong><br>
+<img src="https://img-blog.csdnimg.cn/bc937fcbd36f45fe8488280b1887ea83.png" alt="在这里插入图片描述"></p>
+<p><strong>图片8：点赞的Stereo信息</strong></p>
+<p><span id="step3"></span></p>
+<h1><a id="2MobileNet_151"></a>任务2：了解MobileNet</h1>
+<h2><a id="MobileNet_152"></a>第三步：什么是MobileNet？</h2>
+<p>MobileNet是一种轻量级的神经网络架构，旨在在移动和嵌入式设备上进行实时图像分类和目标检测。它由Google团队开发，采用了深度可分离卷积（depthwise separable convolution）的结构，这种结构可以大幅减少网络参数数量，从而在保持准确性的同时大幅降低了计算和存储资源的需求。MobileNet可以在移动设备上实现高效的图像分类和目标检测，因此被广泛应用于计算机视觉领域的移动端应用。</p>
+<ul>
+<li>了解depthai_ros中关于使用MobileNet的示例</li>
+</ul>
+<p>mobilenet_publisher.cpp is a C++ program that uses the <code>depthai</code> library and <code>ROS2</code> to run object detection on an input camera stream using a MobileNet-based neural network. It creates a pipeline that connects a color camera node to a MobileNet detection network node and then an output XLink node. The program creates two publishers, one for the camera stream and one for the detected objects.</p>
+<p>The <code>createPipeline</code> function creates a <code>depthai</code> pipeline with a <code>ColorCamera</code> node, a <code>MobileNetDetectionNetwork</code> node, and an <code>XLinkOut</code> node. It sets some properties for the <code>ColorCamera</code>, such as the preview size, the resolution, the color order, and the frames per second (FPS). It also sets the confidence threshold and the blob path for the <code>MobileNetDetectionNetwork</code>. The function then links the nodes together in the pipeline.</p>
+<p>The <code>main</code> function initializes <code>ROS2</code> and creates a node with the name “mobilenet_node”. It declares and retrieves some parameters, such as the tf prefix, the camera parameter URI, the resource base folder, the sync NN flag, and the NN name. It uses these parameters to create the pipeline and the <code>depthai</code> device. It then gets the output queues for the camera stream and the detected objects.</p>
+<p>The program creates two <code>BridgePublisher</code> objects, one for the camera stream and one for the detected objects. The <code>BridgePublisher</code> objects use <code>ROS2</code> to publish messages to topics. They convert the <code>depthai</code> messages to ROS2 messages using <code>ImageConverter</code> and <code>ImgDetectionConverter</code>, respectively. The <code>ImageConverter</code> converts <code>ImgFrame</code> messages to <code>sensor_msgs::msg::Image</code> messages, and the <code>ImgDetectionConverter</code> converts <code>ImgDetections</code> messages to <code>vision_msgs::msg::Detection2DArray</code> messages.</p>
+<p>The <code>detectionPublish</code> and <code>rgbPublish</code> objects add a publisher callback to the output queues. They call the <code>BridgePublisher::publish</code> function when there is data in the output queue. The <code>spin</code> function in <code>rclcpp</code> is called to start the ROS2 event loop.</p>
+<pre><code class="prism language-bash">
+<span class="token comment">#include &lt;cstdio&gt;</span>
+<span class="token comment">#include &lt;iostream&gt;</span>
+
+<span class="token comment">#include "camera_info_manager/camera_info_manager.hpp"</span>
+<span class="token comment">#include "depthai_bridge/BridgePublisher.hpp"</span>
+<span class="token comment">#include "depthai_bridge/ImageConverter.hpp"</span>
+<span class="token comment">#include "depthai_bridge/ImgDetectionConverter.hpp"</span>
+<span class="token comment">#include "rclcpp/executors.hpp"</span>
+<span class="token comment">#include "rclcpp/node.hpp"</span>
+<span class="token comment">#include "sensor_msgs/msg/image.hpp"</span>
+<span class="token comment">#include "vision_msgs/msg/detection2_d_array.hpp"</span>
+
+// Inludes common necessary includes <span class="token keyword">for</span> development using depthai library
+<span class="token comment">#include "depthai/device/DataQueue.hpp"</span>
+<span class="token comment">#include "depthai/device/Device.hpp"</span>
+<span class="token comment">#include "depthai/pipeline/Pipeline.hpp"</span>
+<span class="token comment">#include "depthai/pipeline/node/ColorCamera.hpp"</span>
+<span class="token comment">#include "depthai/pipeline/node/DetectionNetwork.hpp"</span>
+<span class="token comment">#include "depthai/pipeline/node/XLinkOut.hpp"</span>
+
+dai::Pipeline createPipeline<span class="token punctuation">(</span>bool syncNN, std::string nnPath<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    dai::Pipeline pipeline<span class="token punctuation">;</span>
+    auto colorCam <span class="token operator">=</span> pipeline.create<span class="token operator">&lt;</span>dai::node::ColorCamera<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    auto xlinkOut <span class="token operator">=</span> pipeline.create<span class="token operator">&lt;</span>dai::node::XLinkOut<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    auto detectionNetwork <span class="token operator">=</span> pipeline.create<span class="token operator">&lt;</span>dai::node::MobileNetDetectionNetwork<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    auto nnOut <span class="token operator">=</span> pipeline.create<span class="token operator">&lt;</span>dai::node::XLinkOut<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    xlinkOut-<span class="token operator">&gt;</span>setStreamName<span class="token punctuation">(</span><span class="token string">"preview"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    nnOut-<span class="token operator">&gt;</span>setStreamName<span class="token punctuation">(</span><span class="token string">"detections"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    colorCam-<span class="token operator">&gt;</span>setPreviewSize<span class="token punctuation">(</span><span class="token number">300</span>, <span class="token number">300</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    colorCam-<span class="token operator">&gt;</span>setResolution<span class="token punctuation">(</span>dai::ColorCameraProperties::SensorResolution::THE_1080_P<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    colorCam-<span class="token operator">&gt;</span>setInterleaved<span class="token punctuation">(</span>false<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    colorCam-<span class="token operator">&gt;</span>setColorOrder<span class="token punctuation">(</span>dai::ColorCameraProperties::ColorOrder::BGR<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    colorCam-<span class="token operator">&gt;</span>setFps<span class="token punctuation">(</span><span class="token number">40</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    // testing MobileNet DetectionNetwork
+    detectionNetwork-<span class="token operator">&gt;</span>setConfidenceThreshold<span class="token punctuation">(</span><span class="token number">0</span>.5f<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    detectionNetwork-<span class="token operator">&gt;</span>setBlobPath<span class="token punctuation">(</span>nnPath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    // Link plugins CAM -<span class="token operator">&gt;</span> NN -<span class="token operator">&gt;</span> XLINK
+    colorCam-<span class="token operator">&gt;</span>preview.link<span class="token punctuation">(</span>detectionNetwork-<span class="token operator">&gt;</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    if<span class="token punctuation">(</span>syncNN<span class="token punctuation">)</span>
+        detectionNetwork-<span class="token operator">&gt;</span>passthrough.link<span class="token punctuation">(</span>xlinkOut-<span class="token operator">&gt;</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">else</span>
+        colorCam-<span class="token operator">&gt;</span>preview.link<span class="token punctuation">(</span>xlinkOut-<span class="token operator">&gt;</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    detectionNetwork-<span class="token operator">&gt;</span>out.link<span class="token punctuation">(</span>nnOut-<span class="token operator">&gt;</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token builtin class-name">return</span> pipeline<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+int main<span class="token punctuation">(</span>int argc, char** argv<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    rclcpp::init<span class="token punctuation">(</span>argc, argv<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    auto <span class="token function">node</span> <span class="token operator">=</span> rclcpp::Node::make_shared<span class="token punctuation">(</span><span class="token string">"mobilenet_node"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std::string tfPrefix, resourceBaseFolder, nnPath<span class="token punctuation">;</span>
+    std::string cameraParamUri <span class="token operator">=</span> <span class="token string">"package://depthai_examples/params/camera"</span><span class="token punctuation">;</span>
+    std::string nnName<span class="token punctuation">(</span>BLOB_NAME<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    bool syncNN<span class="token punctuation">;</span>
+    int bad_params <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    node-<span class="token operator">&gt;</span>declare_parameter<span class="token punctuation">(</span><span class="token string">"tf_prefix"</span>, <span class="token string">"oak"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    node-<span class="token operator">&gt;</span>declare_parameter<span class="token punctuation">(</span><span class="token string">"camera_param_uri"</span>, cameraParamUri<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    node-<span class="token operator">&gt;</span>declare_parameter<span class="token punctuation">(</span><span class="token string">"resourceBaseFolder"</span>, <span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    node-<span class="token operator">&gt;</span>declare_parameter<span class="token punctuation">(</span><span class="token string">"sync_nn"</span>, syncNN<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    node-<span class="token operator">&gt;</span>declare_parameter<span class="token operator">&lt;</span>std::string<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token string">"nnName"</span>, <span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    node-<span class="token operator">&gt;</span>get_parameter<span class="token punctuation">(</span><span class="token string">"tf_prefix"</span>, tfPrefix<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    node-<span class="token operator">&gt;</span>get_parameter<span class="token punctuation">(</span><span class="token string">"camera_param_uri"</span>, cameraParamUri<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    node-<span class="token operator">&gt;</span>get_parameter<span class="token punctuation">(</span><span class="token string">"sync_nn"</span>, syncNN<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    node-<span class="token operator">&gt;</span>get_parameter<span class="token punctuation">(</span><span class="token string">"resourceBaseFolder"</span>, resourceBaseFolder<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    if<span class="token punctuation">(</span>resourceBaseFolder.empty<span class="token punctuation">(</span><span class="token punctuation">))</span> <span class="token punctuation">{</span>
+        throw std::runtime_error<span class="token punctuation">(</span><span class="token string">"Send the path to the resouce folder containing NNBlob in \'resourceBaseFolder\' "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    // Uses the path from param <span class="token keyword">if</span> passed or <span class="token keyword">else</span> uses from BLOB_PATH from CMAKE
+    std::string nnParam<span class="token punctuation">;</span>
+    node-<span class="token operator">&gt;</span>get_parameter<span class="token punctuation">(</span><span class="token string">"nnName"</span>, nnParam<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    if<span class="token punctuation">(</span>nnParam <span class="token operator">!=</span> <span class="token string">"x"</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        node-<span class="token operator">&gt;</span>get_parameter<span class="token punctuation">(</span><span class="token string">"nnName"</span>, nnName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    nnPath <span class="token operator">=</span> resourceBaseFolder + <span class="token string">"/"</span> + nnName<span class="token punctuation">;</span>
+    dai::Pipeline pipeline <span class="token operator">=</span> createPipeline<span class="token punctuation">(</span>syncNN, nnPath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    dai::Device device<span class="token punctuation">(</span>pipeline<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std::shared_ptr<span class="token operator">&lt;</span>dai::DataOutputQueue<span class="token operator">&gt;</span> previewQueue <span class="token operator">=</span> device.getOutputQueue<span class="token punctuation">(</span><span class="token string">"preview"</span>, <span class="token number">30</span>, <span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std::shared_ptr<span class="token operator">&lt;</span>dai::DataOutputQueue<span class="token operator">&gt;</span> nNetDataQueue <span class="token operator">=</span> device.getOutputQueue<span class="token punctuation">(</span><span class="token string">"detections"</span>, <span class="token number">30</span>, <span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std::string color_uri <span class="token operator">=</span> cameraParamUri + <span class="token string">"/"</span> + <span class="token string">"color.yaml"</span><span class="token punctuation">;</span>
+
+    // TODO<span class="token punctuation">(</span>sachin<span class="token punctuation">)</span>: Add option to use CameraInfo from EEPROM
+    dai::rosBridge::ImageConverter rgbConverter<span class="token punctuation">(</span>tfPrefix + <span class="token string">"_rgb_camera_optical_frame"</span>, <span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    dai::rosBridge::BridgePublisher<span class="token operator">&lt;</span>sensor_msgs::msg::Image, dai::ImgFrame<span class="token operator">&gt;</span> rgbPublish<span class="token punctuation">(</span>previewQueue,
+                                                                                       node,
+                                                                                       std::string<span class="token punctuation">(</span><span class="token string">"color/image"</span><span class="token punctuation">)</span>,
+                                                                                       std::bind<span class="token punctuation">(</span><span class="token operator">&amp;</span>dai::rosBridge::ImageConverter::toRosMsg,
+                                                                                                 <span class="token operator">&amp;</span>rgbConverter,  // since the converter has the same frame name
+                                                                                                                 // and image <span class="token builtin class-name">type</span> is also same we can reuse it
+                                                                                                 std::placeholders::_1,
+                                                                                                 std::placeholders::_2<span class="token punctuation">)</span>,
+                                                                                       <span class="token number">30</span>,
+                                                                                       color_uri,
+                                                                                       <span class="token string">"color"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    dai::rosBridge::ImgDetectionConverter detConverter<span class="token punctuation">(</span>tfPrefix + <span class="token string">"_rgb_camera_optical_frame"</span>, <span class="token number">300</span>, <span class="token number">300</span>, <span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    dai::rosBridge::BridgePublisher<span class="token operator">&lt;</span>vision_msgs::msg::Detection2DArray, dai::ImgDetections<span class="token operator">&gt;</span> detectionPublish<span class="token punctuation">(</span>
+        nNetDataQueue,
+        node,
+        std::string<span class="token punctuation">(</span><span class="token string">"color/mobilenet_detections"</span><span class="token punctuation">)</span>,
+        std::bind<span class="token punctuation">(</span><span class="token operator">&amp;</span>dai::rosBridge::ImgDetectionConverter::toRosMsg, <span class="token operator">&amp;</span>detConverter, std::placeholders::_1, std::placeholders::_2<span class="token punctuation">)</span>,
+        <span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    detectionPublish.addPublisherCallback<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    rgbPublish.addPublisherCallback<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  // addPublisherCallback works only when the dataqueue is non blocking.
+
+    rclcpp::spin<span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token builtin class-name">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>这篇代码的版权为depthai所有，如果你希望查看他们构建的本篇相关完整代码和其他代码，请查看以下链接。<br>
+<a href="https://github.com/luxonis/depthai-ros/blob/humble/depthai_examples/src/mobilenet_publisher.cpp">参考链接： mobilenet_publisher</a><br>
+<a href="https://github.com/luxonis/depthai-ros">参考链接： depthai-ros</a></p>
+<p><span id="step4"></span></p>
+<h1><a id="3_296"></a>任务3：运行目标追踪示例</h1>
+<h2><a id="mini_pupper_297"></a>第四步：配置mini pupper环境</h2>
+<p>Before we can start run object tracking on the Mini Pupper, we need to make sure our environment is configured. This task consists of two steps:</p>
+<h3><a id="Step_1_Configure_the_PC_302"></a>Step 1: Configure the PC</h3>
+<p>PC Setup corresponds to PC (your desktop or laptop PC) for controlling Mini Pupper remotely or executing the simulator.</p>
+<h4><a id="11_ROS_2_installation_305"></a>1.1 ROS 2 installation</h4>
+<p>Please follow the <a href="https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html">installation document for ROS Humble</a> or use the [unofficial ROS 2 installation script](https:// github.com/Tiryoh/ros2_setup_scripts_ubuntu).</p>
+<h4><a id="12_Download_the_Mini_Pupper_ROS_2__dependencies_packages_308"></a>1.2 Download the Mini Pupper ROS 2 &amp; dependencies packages</h4>
+<p>After ROS 2 installation, download the Mini Pupper ROS package in the workspace.</p>
+<pre><code class="prism language-bash"><span class="token function">mkdir</span> -p ~/ros2_ws/src
+<span class="token builtin class-name">cd</span> ~/ros2_ws/src
+<span class="token function">git</span> clone https://github.com/mangdangroboticsclub/mini_pupper_ros.git -b ros2
+vcs <span class="token function">import</span> <span class="token operator">&lt;</span> mini_pupper_ros/.minipupper.repos --recursive <span class="token comment"># requires vcstool</span>
+</code></pre>
+<p><strong>Notes:</strong><br>
+If you haven’t installed vcstool, please install vcstool first.</p>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> <span class="token function">sh</span> -c <span class="token string">'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" &gt; /etc/apt/sources.list.d/ros-latest.list'</span>
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> <span class="token function">curl</span> <span class="token comment"># if you haven't already installed curl</span>
+<span class="token function">curl</span> -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc <span class="token operator">|</span> <span class="token function">sudo</span> apt-key <span class="token function">add</span> -
+<span class="token function">sudo</span> <span class="token function">apt-get</span> update
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> python3-vcstool
+</code></pre>
+<h4><a id="13_Build_and_install_all_ROS_packages_325"></a>1.3 Build and install all ROS packages</h4>
+<pre><code class="prism language-bash"><span class="token builtin class-name">cd</span> ~/ros2_ws
+rosdep <span class="token function">install</span> --from-paths src --ignore-src -r -y
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> ros-humble-teleop-twist-keyboard
+pip <span class="token function">install</span> transforms3d
+colcon build --symlink-install
+</code></pre>
+<h3><a id="Step_2_Configure_Mini_Pupper_333"></a>Step 2: Configure Mini Pupper</h3>
+<p>Mini Pupper Setup corresponds to the Raspberry Pi on your Mini Pupper.</p>
+<h4><a id="21_mini_pupper_bsp_installation_335"></a>2.1 mini_pupper_bsp installation</h4>
+<p>You should first install dependencies of servos, battery monitor, and display screen.<br>
+See <a href="https://github.com/mangdangroboticsclub/mini_pupper_bsp">mini_pupper_bsp</a>.</p>
+<h4><a id="22_ROS_2_installation_339"></a>2.2 ROS 2 installation</h4>
+<p>After installing the driver software, install ROS 2. ROS 2 Humble is required.<br>
+Please follow the <a href="https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html">installation document for ROS Humble</a> or use the [unofficial ROS 2 installation script](https:// github.com/Tiryoh/ros2_setup_scripts_ubuntu).</p>
+<p><span id="step5"></span></p>
+<h2><a id="mini_pupper_345"></a>第五步：运行mini pupper的目标追踪示例</h2>
+<p>mini pupper的目标追踪示例将从处理depthai_ros中发出的信息，并进行处理，转化为mini pupper的运动指令。其中用到了geometry_msgs.msg中的消息接口 Pose和vision_msgs.msg 中的消息接口 Detection2DArray。</p>
+<ul>
+<li>了解geometry_msgs.msg中的消息接口 Pose</li>
+</ul>
+<pre><code class="prism language-bash"><span class="token comment"># A representation of pose in free space, composed of position and orientation.</span>
+
+Point position
+	float64 x
+	float64 y
+	float64 z
+Quaternion orientation
+	float64 x <span class="token number">0</span>
+	float64 y <span class="token number">0</span>
+	float64 z <span class="token number">0</span>
+	float64 w <span class="token number">1</span>
+
+</code></pre>
+<ul>
+<li>安装vision_msgs<br>
+vision_msgs并不是ROS2安装时就自带安装的消息类型，你需要打开命令行执行如下代码，并安装vision_msgs。</li>
+</ul>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> ros-humble-vision-msgs
+</code></pre>
+<ul>
+<li>了解vision_msgs.msg 中的消息接口 Detection2DArray</li>
+</ul>
+<p>Detection2DArray interface consists of two message types: std_msgs/Header and Detection2D.</p>
+<p>The std_msgs/Header message contains fields for the message header, consisting of a time stamp (which includes fields for seconds and nanoseconds) and a frame_id string.</p>
+<p>The Detection2D message contains fields for a list of detections generated by a multi-proposal detector, including the fields for the message header (again consisting of a time stamp and a frame_id). It also contains an array of ObjectHypothesisWithPose, where each ObjectHypothesisWithPose contains an ObjectHypothesis (which consists of a class_id string and a score float64) and a geometry_msgs/PoseWithCovariance message (which in turn consists of a geometry_msgs/pose message, a float64[36] covariance array, and a BoundingBox2D message). The BoundingBox2D message contains a vision_msgs/Pose2D message (which includes vision_msgs/Point2D message and a float64 theta) and size_x and size_y float64 values.</p>
+<pre><code class="prism language-bash"><span class="token comment"># A list of 2D detections, for a multi-object 2D detector.</span>
+
+std_msgs/Header header
+	builtin_interfaces/Time stamp
+		int32 sec
+		uint32 nanosec
+	string frame_id
+
+<span class="token comment"># A list of the detected proposals. A multi-proposal detector might generate</span>
+<span class="token comment">#   this list with many candidate detections generated from a single input.</span>
+Detection2D<span class="token punctuation">[</span><span class="token punctuation">]</span> detections
+	<span class="token comment">#</span>
+	std_msgs/Header header
+		builtin_interfaces/Time stamp
+			int32 sec
+			uint32 nanosec
+		string frame_id
+	ObjectHypothesisWithPose<span class="token punctuation">[</span><span class="token punctuation">]</span> results
+		ObjectHypothesis hypothesis
+			string class_id
+			float64 score
+		geometry_msgs/PoseWithCovariance pose
+			Pose pose
+				Point position
+					float64 x
+					float64 y
+					float64 z
+				Quaternion orientation
+					float64 x <span class="token number">0</span>
+					float64 y <span class="token number">0</span>
+					float64 z <span class="token number">0</span>
+					float64 w <span class="token number">1</span>
+			float64<span class="token punctuation">[</span><span class="token number">36</span><span class="token punctuation">]</span> covariance
+	BoundingBox2D bbox
+		vision_msgs/Pose2D center
+			vision_msgs/Point2D position
+				float64 x
+				float64 y
+			float64 theta
+		float64 size_x
+		float64 size_y
+	string <span class="token function">id</span>
+</code></pre>
+<ul>
+<li>启动oak-d-lite mobile_publisher<br>
+mobile_publisher将发出/color/mobilenet_detections话题</li>
+</ul>
+<pre><code class="prism language-bash">ros2 launch depthai_examples mobile_publisher.launch.py camera_model:<span class="token operator">=</span>OAK-D-LITE
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/227e289c36de43d2bd24e99b56070ceb.png" alt="在这里插入图片描述"></p>
+<p><strong>图片9：启动oak-d-lite mobile_publisher</strong></p>
+<ul>
+<li>启动mini pupper目标检测示例</li>
+</ul>
+<pre><code class="prism language-bash">ros2 launch mini_pupper_examples object_tracking.launch.py camera_model:<span class="token operator">=</span>OAK-D-LITE
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/a74008ddcbd74c65890847d4005c2b2d.gif" alt="在这里插入图片描述"></p>
+<p>如果希望了解具体的代码细节，可以查看以下链接。<br>
+<a href="https://github.com/mangdangroboticsclub/mini_pupper_ros/tree/ros2">参考链接：mini_pupper_ros</a></p>
+<h1><a id="Summary_447"></a>总结Summary</h1>
+<p>经过本课程的学习，你应该能达到以下水平：</p>
+
+<table>
+<thead>
+<tr>
+<th>知识点</th>
+<th>内容</th>
+<th>了解</th>
+<th>熟悉</th>
+<th>掌握</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenCV</td>
+<td>应用OpenCV的视频流处理</td>
+<td>✔</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>OAK-D-Lite</td>
+<td>OAK-D-Lite的使用</td>
+<td></td>
+<td></td>
+<td>✔</td>
+</tr>
+<tr>
+<td>神经网络应用</td>
+<td>MobileNet</td>
+<td>✔</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>目标跟踪</td>
+<td>mini_pupper的目标跟踪应用</td>
+<td></td>
+<td>✔</td>
+<td></td>
+</tr>
+</tbody>
+</table><p><span id="backinfo"></span></p>
+<h1><a id="Background_Information_and_Resources_459"></a>背景信息和资源Background Information and Resources</h1>
+<p><a href="https://github.com/mangdangroboticsclub/mini_pupper_ros/tree/ros2">参考链接：mini_pupper_ros</a><br>
+<a href="https://github.com/luxonis/depthai-experiments/tree/master/gen2-qr-code-scanner">参考链接： depthai 二维码识别</a><br>
+<a href="https://github.com/luxonis/depthai-experiments">参考链接： depthai有趣的demo</a><br>
+<a href="https://github.com/luxonis/depthai-ros">参考链接： depthai-ros</a><br>
+<a href="https://github.com/luxonis/depthai-ros/blob/humble/depthai_examples/src/mobilenet_publisher.cpp">参考链接： mobilenet_publisher</a><br>
+<a href="https://docs.luxonis.com/projects/api/en/latest/components/nodes/object_tracker/">参考链接：depthai ObjectTracker</a><br>
+<a href="https://docs.luxonis.com/en/latest/">参考链接：depthai官方文档</a><br>
+<a href="https://github.com/mangdangroboticsclub/mini_pupper_ros/tree/ros2">Reference : Mini Pupper Source Code on GitHub</a></p>
+<p><strong>版权信息：教材尚未完善，此处预留版权信息处理方式</strong><br>
+mini pupper相关内容可访问：<a href="https://github.com/mangdangroboticsclub">https://github.com/mangdangroboticsclub</a></p>
+</div>
+</body>
+
+</html>

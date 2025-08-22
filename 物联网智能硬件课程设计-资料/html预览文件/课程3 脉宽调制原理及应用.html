@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课程3 脉宽调制原理及应用</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1><a id="3__1"></a>课程3 脉宽调制原理及应用</h1>
+<h2><a id="_2"></a>课程概述</h2>
+<p>在这个教程中，我们将学习如何用树莓派上的GPIO控制LED灯呼吸。</p>
+<h2><a id="_4"></a>关于课程</h2>
+<p>按照规划，本课程需要花费大约60分钟来完成，目标受众为四足机器人开发爱好者。<br>
+<strong>note</strong><br>
+本课程是基于<a href="https://www.mangdang.net/">Mangdang</a>的Mini Pupper系列产品搭建的。<br>
+本课程涉及的源代码托管在Github，你可以<a href="https://github.com/mangdangroboticsclub/mini_pupper_ros/tree/ros2">点击此处访问</a>。</p>
+<h2><a id="_9"></a>学习目标</h2>
+<p>在完成这个教程后，你将能够：</p>
+<ol>
+<li>通过背景知识学习，了解digital与analog的区别。</li>
+<li>通过GPIO对外部LED灯进行呼吸控制，熟悉PWM技术。</li>
+</ol>
+<h2><a id="_14"></a>课程细节</h2>
+<p>本课程将使用以下组件：</p>
+<ul>
+<li>树莓派</li>
+<li>LED模块</li>
+<li>杜邦线</li>
+</ul>
+<p>这个教程分为以下任务：</p>
+<ol>
+<li>学习实验知识</li>
+<li>硬件连接</li>
+<li>编写Python程序 led_breathe.py</li>
+<li>运行程序，观察效果</li>
+</ol>
+<h2><a id="_30"></a>准备材料</h2>
+<p>在开始这个教程之前，你需要准备以下材料：</p>
+<ul>
+<li>一台树莓派</li>
+<li>一个LED模块</li>
+<li>几根杜邦线</li>
+</ul>
+<h1><a id="_39"></a>引言</h1>
+<p>在这个教程中，我们将学习如何通过python编程，用GPIO控制LED灯，使之亮度逐渐增大，随后减小，并循环上述过程，实现呼吸效果，周期为4s。</p>
+<h2><a id="_41"></a>整体步骤</h2>
+<p>这个教程将分为几个任务：<br>
+1.学习实验知识<br>
+2.编写Python程序led_breathe.py<br>
+3.运行程序，观察实验效果</p>
+<p>请按照教程中的步骤完成每个任务。</p>
+<h1><a id="1_48"></a>任务1：学习实验知识</h1>
+<h3><a id="1_GPIO_49"></a>1. 查看树莓派GPIO引脚图</h3>
+<pre><code class="prism language-bash">pinout
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/cfc05d828b3b4b5a959c3f23516722a7.png" alt="在这里插入图片描述"><strong>图片1：GPIO引脚图</strong></p>
+<p><a href="https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio-and-the-40-pin-header">参考链接：树莓派官方4B引脚图的详细资料</a></p>
+<h3><a id="2RPiGPIO_57"></a>2.安装及引入RPi.GPIO库</h3>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> pip <span class="token function">install</span> RPi.GPIO <span class="token comment"># 命令行pip安装RPi.GPIO</span>
+</code></pre>
+<pre><code class="prism language-python"><span class="token keyword">import</span> RPi<span class="token punctuation">.</span>GPIO <span class="token keyword">as</span> GPIO <span class="token comment"># 在Python代码引入RPi.GPIO库</span>
+</code></pre>
+<h3><a id="3_RPiGPIO_65"></a>3. RPi.GPIO库的用法</h3>
+<pre><code class="prism language-python">GPIO<span class="token punctuation">.</span>setmode<span class="token punctuation">(</span>GPIO<span class="token punctuation">.</span>BOARD<span class="token punctuation">)</span> <span class="token comment">#初始化GPIO引脚编码方式，需放在代码正式开始处</span>
+<span class="token comment"># GPIO引脚由多种编码方式，比如BCM、wiringPi、BOARD等,方便起见，课程均采用BOARD编码模式</span>
+</code></pre>
+<pre><code class="prism language-python">GPIO<span class="token punctuation">.</span>setup<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>OUT<span class="token punctuation">)</span> <span class="token comment">#初始化GPIO引脚设置，需放在代码正式开始处</span>
+GPIO<span class="token punctuation">.</span>setup<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>IN<span class="token punctuation">)</span> <span class="token comment">#12为引脚号 GPIO.IN或者GPIO.OU为输入输出模式</span>
+</code></pre>
+<pre><code class="prism language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>GPIO<span class="token punctuation">.</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment">#GPIO.input查看GPIO输入的电平信号</span>
+<span class="token comment">#GPIO.HIGH为高电平 ，GPIO.LOW为低电平 也可用于条件判断作其他操作</span>
+</code></pre>
+<pre><code class="prism language-python"><span class="token comment"># GPIO.output向端口发送高低电平信号</span>
+GPIO<span class="token punctuation">.</span>output<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>HIGH<span class="token punctuation">)</span> <span class="token comment"># 此处以12号端口为例</span>
+GPIO<span class="token punctuation">.</span>output<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>LOW<span class="token punctuation">)</span>
+</code></pre>
+<pre><code class="prism language-python">GPIO<span class="token punctuation">.</span>cleanup<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment">#在使用完GPIO后要作清理，避免后续引脚被占用</span>
+</code></pre>
+<p><a href="https://pypi.org/project/RPi.GPIO/">参考链接：Python RPi.GPIO库官方文档</a></p>
+<h3><a id="4_92"></a>4.什么是模拟？</h3>
+<p>LED灯在数字信号0和1的切换下发生亮灭的变化，但是，LED灯在亮和灭之间存在着许多中间状态，比如30%亮度、50%亮度，这些状态应该如何表示呢？这就要提到模拟、数字以及PWM技术了。<br>
+模拟信号（Analog）是指用<strong>连续变化</strong>的物理量表示的信号，分布于自然界的各个角落，如气温、电流、电压的变化。<br>
+在模拟电路中，电压和电流可直接用来进行控制对象，比如家庭音箱的音量。简单来说，随着电流的增大，播放音乐的音量也在逐步增大。</p>
+<h3><a id="5_96"></a>5.什么是数字？</h3>
+<p>数字信号（Digital）是人为的、抽象出来的、在幅度取值上不连续的信号。<br>
+比如我们在控制LED灯闪烁时，是通过0和1，也就是高低电平信号来控制LED的亮和灭，只存在两种状态，要么高电平，要么低电平，没有其他中间值。<br>
+在计算机中，大小常用有限位的二进制数表示的这种离散的、不连续的信号被称为数字信号。<br>
+模拟信号在现实的传输过程中经常会被外界干扰，造成传输信息有偏差，比如打电话时的模糊，老式电视机上的雪花噪点，将模拟信号转化为数字信号则可以解决这个问题。</p>
+<p><strong>图片4：使模拟信号数字化的图</strong></p>
+<h3><a id="6PWM_103"></a>6.什么是PWM？</h3>
+<p>PWM正是一种将模拟信号转换数字信号的技术，它对模拟信号电平进行数字编码。<br>
+PWM，全称为Pulse-width modulation，意为脉冲宽度调制，通过对数字信号每一个周期内高电平的占比时长的调节，来使得信号对外的表现为0～1之间的一个中间值。<br>
+高电平的占比时常也就是占空比(Duty Cycle)，占空比指电路被接通的时间占整个电路工作周期的百分比。<br>
+当方波在一个周期内高电平（1）的时长为周期的一半时，低电平（0）的时长也为周期的一半，那么这个周期对外展现出的值就是(1x50% + 0x50%)=0.5<br>
+当我们希望LED对外呈现30%的亮度时，只需要让高电平（1）的时间占比为周期的30%，其余70%的时间为低电平（0），那么这个周期对外展现出的值就是(1x30% + 0x70%)=0.3<br>
+如此一来，LED灯就呈现出了30%的亮度。</p>
+<p><strong>图片3：PWM示意图</strong><br>
+图片来源：<a href="https://en.wikipedia.org/wiki/File:PWM,_3-level.svg">维基百科</a><br>
+<img src="https://img-blog.csdnimg.cn/e8c25c9a76d3414d88265599f1a54957.png" alt="在这里插入图片描述"></p>
+<h3><a id="7_RPiGPIOPWM_114"></a>7. RPi的GPIO库中PWM的用法</h3>
+<pre><code class="prism language-python"><span class="token keyword">import</span> RPi<span class="token punctuation">.</span>GPIO <span class="token keyword">as</span> GPIO	<span class="token comment">#	引入GPIO库</span>
+</code></pre>
+<pre><code class="prism language-python">GPIO<span class="token punctuation">.</span>setmode<span class="token punctuation">(</span>GPIO<span class="token punctuation">.</span>BOARD<span class="token punctuation">)</span> <span class="token comment">#初始化GPIO引脚编码方式，需放在代码正式开始处</span>
+GPIO<span class="token punctuation">.</span>setup<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>OUT<span class="token punctuation">)</span> <span class="token comment">#初始化GPIO引脚设置，需放在代码正式开始处</span>
+</code></pre>
+<pre><code class="prism language-python">p <span class="token operator">=</span> GPIO<span class="token punctuation">.</span>PWM<span class="token punctuation">(</span>channel<span class="token punctuation">,</span> frequency<span class="token punctuation">)</span>	<span class="token comment">#	创建pwm实例 channel为引脚号 frequency为频率</span>
+</code></pre>
+<pre><code class="prism language-python">p<span class="token punctuation">.</span>start<span class="token punctuation">(</span>dc<span class="token punctuation">)</span>	<span class="token comment">#	开始pwm	dc为初始占空比(0.0 &lt;= dc &lt;= 100.0)</span>
+</code></pre>
+<pre><code class="prism language-python">p<span class="token punctuation">.</span>stop<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment"># 停止pwm</span>
+</code></pre>
+<pre><code class="prism language-python">p<span class="token punctuation">.</span>ChangeFrequency<span class="token punctuation">(</span>freq<span class="token punctuation">)</span>   <span class="token comment"># 改变频率（Hz）freq</span>
+</code></pre>
+<pre><code class="prism language-python">p<span class="token punctuation">.</span>ChangeDutyCycle<span class="token punctuation">(</span>dc<span class="token punctuation">)</span>  <span class="token comment"># 改变占空比(0.0 &lt;= dc &lt;= 100.0)</span>
+</code></pre>
+<pre><code class="prism language-python">GPIO<span class="token punctuation">.</span>cleanup<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment"># 清理GPIO引脚</span>
+</code></pre>
+<p><a href="https://sourceforge.net/p/raspberry-gpio-python/wiki/PWM/">参考链接：RPi GPIO库中PWM()函数的详细资料</a></p>
+<h3><a id="8mini_pupperLED_151"></a>8.mini pupper学习套件-LED模块的使用</h3>
+<p>mini pupper学习套件中的LED模块自带板载限流电阻，能够保护LED模块。<br>
+接线如下：</p>
+
+<table>
+<thead>
+<tr>
+<th>引脚</th>
+<th>作用</th>
+<th>树莓派对应口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GND</td>
+<td>接地</td>
+<td>GND口</td>
+</tr>
+<tr>
+<td>R</td>
+<td>红灯正极</td>
+<td>PWM口</td>
+</tr>
+<tr>
+<td>G</td>
+<td>绿灯正极</td>
+<td>PWM口</td>
+</tr>
+<tr>
+<td>B</td>
+<td>蓝灯正极</td>
+<td>PWM口</td>
+</tr>
+</tbody>
+</table><p><img src="https://img-blog.csdnimg.cn/7e7d8863c69341cdb417a90dc8f0bfcf.jpeg" alt="在这里插入图片描述"></p>
+<p><strong>图片2：树莓派LED灯细节图</strong></p>
+<h1><a id="2Pythonled_breathepy_164"></a>任务2：编写Python程序led_breathe.py</h1>
+<pre><code class="prism language-python"><span class="token comment">#!/usr/bin/python</span>
+<span class="token comment"># coding:utf-8</span>
+<span class="token comment"># led_breathe.py</span>
+<span class="token comment"># 树莓派GPIO控制外部LED灯呼吸，周期为4秒。</span>
+<span class="token keyword">import</span> time
+<span class="token keyword">import</span> RPi<span class="token punctuation">.</span>GPIO <span class="token keyword">as</span> GPIO
+
+<span class="token comment"># GPIO初始化</span>
+LED <span class="token operator">=</span> <span class="token number">33</span>    <span class="token comment"># 外部led灯连接的树莓派PWM端口，可根据需要调整</span>
+GND <span class="token operator">=</span> <span class="token number">34</span>    <span class="token comment"># 接地的端口</span>
+period <span class="token operator">=</span> <span class="token number">4</span>  <span class="token comment"># 呼吸周期</span>
+GPIO<span class="token punctuation">.</span>setmode<span class="token punctuation">(</span>GPIO<span class="token punctuation">.</span>BOARD<span class="token punctuation">)</span>
+GPIO<span class="token punctuation">.</span>setup<span class="token punctuation">(</span>LED<span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>OUT<span class="token punctuation">)</span>
+p <span class="token operator">=</span> GPIO<span class="token punctuation">.</span>PWM<span class="token punctuation">(</span>LED<span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span>  <span class="token comment"># 引脚=LED 频率=50Hz</span>
+p<span class="token punctuation">.</span>start<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"PWM控制呼吸灯开始，端口号为%d，周期为%d秒。"</span> <span class="token operator">%</span> <span class="token punctuation">(</span>LED<span class="token punctuation">,</span> period<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">try</span><span class="token punctuation">:</span>    <span class="token comment"># try和except为固定搭配，用于捕捉执行过程中，用户是否按下ctrl+C终止程序</span>
+    <span class="token keyword">while</span> <span class="token number">1</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> dc <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">101</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            p<span class="token punctuation">.</span>ChangeDutyCycle<span class="token punctuation">(</span>dc<span class="token punctuation">)</span>
+            time<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span>period <span class="token operator">/</span> <span class="token number">200</span><span class="token punctuation">)</span>
+        <span class="token keyword">for</span> dc <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            p<span class="token punctuation">.</span>ChangeDutyCycle<span class="token punctuation">(</span>dc<span class="token punctuation">)</span>
+            time<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span>period <span class="token operator">/</span> <span class="token number">200</span><span class="token punctuation">)</span>
+<span class="token keyword">except</span> KeyboardInterrupt<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+p<span class="token punctuation">.</span>stop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+GPIO<span class="token punctuation">.</span>cleanup<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<h1><a id="3_196"></a>任务3：运行程序，观察实验效果</h1>
+<p>在led_breathe.py的目录下执行以下命令：</p>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> python led_breathe.py
+</code></pre>
+<p>应该能观察到用LED灯亮度逐渐增大，随后减小，并循环上述过程，体现了呼吸的效果，周期为4s。</p>
+<h1><a id="_202"></a>总结</h1>
+<p>经过本知识点的学习和实验操作，你应该能达到以下水平：</p>
+
+<table>
+<thead>
+<tr>
+<th>知识点</th>
+<th>内容</th>
+<th>了解</th>
+<th>熟悉</th>
+<th>掌握</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模拟与数字</td>
+<td>模拟与数字的区别</td>
+<td>✔</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>树莓派</td>
+<td>树莓派GPIO中的PWM端口</td>
+<td>✔</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>PWM</td>
+<td>PWM技术的用法</td>
+<td></td>
+<td>✔</td>
+<td></td>
+</tr>
+<tr>
+<td>硬件</td>
+<td>mini pupper学习套件的LED模块的使用</td>
+<td></td>
+<td></td>
+<td>✔</td>
+</tr>
+</tbody>
+</table><h1><a id="_211"></a>背景信息和资源</h1>
+<p>本教程基于以下资源编写：<br>
+<a href="https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio-and-the-40-pin-header">参考链接：树莓派官方4B引脚图的详细资料</a><br>
+<a href="https://pypi.org/project/RPi.GPIO/">参考链接：Python RPi.GPIO库官方文档</a><br>
+<a href="https://sourceforge.net/p/raspberry-gpio-python/wiki/PWM/">参考链接：RPi GPIO库中PWM()函数的详细资料</a></p>
+<p><strong>版权信息：教材尚未完善，此处预留版权信息处理方式</strong><br>
+mini pupper相关内容可访问：<a href="https://github.com/mangdangroboticsclub">https://github.com/mangdangroboticsclub</a></p>
+</div>
+</body>
+
+</html>

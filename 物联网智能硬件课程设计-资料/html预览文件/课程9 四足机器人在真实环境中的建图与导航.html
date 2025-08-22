@@ -1,0 +1,334 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课程9 四足机器人在真实环境中的建图与导航</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1><a id="9__1"></a>课程9 四足机器人在真实环境中的建图与导航</h1>
+<h2><a id="_3"></a>课程概述</h2>
+<p>在这个教程中，我们将学习如何来控制实际环境中的Mini Pupper，完成SLAM（Simultaneous Localization and Mapping，同时定位和建图）和导航任务。这个教程将指导你一步步地完成配置、控制、SLAM和导航任务。</p>
+<ul>
+<li>
+<p>演示1：键盘控制真实世界中的Mini Pupper<br>
+<img src="https://img-blog.csdnimg.cn/7d63f71cd0e942e2bd8c85438b26c691.gif" alt="请添加图片描述"></p>
+</li>
+<li>
+<p>演示2：键盘控制Mini Pupper完成SLAM<br>
+<img src="https://img-blog.csdnimg.cn/d90a084ee8d34a33a0c60fe550fc6998.gif" alt="请添加图片描述"></p>
+</li>
+<li>
+<p>演示3：Mini Pupper的Navigation<br>
+<img src="https://img-blog.csdnimg.cn/aa972addd02844b38f91f5737080a2b4.gif" alt="请添加图片描述"></p>
+</li>
+</ul>
+<h2><a id="_16"></a>关于课程</h2>
+<p>按照规划，本课程需要花费大约2小时来完成，目标受众为四足机器人开发爱好者。<br>
+<strong>note</strong><br>
+本课程是基于<a href="https://www.mangdang.net/">Mangdang</a>的Mini Pupper系列产品搭建的。<br>
+本课程涉及的源代码托管在Github，你可以<a href="https://github.com/mangdangroboticsclub/mini_pupper_ros/tree/ros2">点击此处访问</a>。</p>
+<h2><a id="_21"></a>学习目标</h2>
+<p>在完成这个教程后，你将能够：</p>
+<ol>
+<li>配置你的PC和Mini Pupper的环境。</li>
+<li>用键盘控制实际环境中的Mini Pupper。</li>
+<li>让Mini Pupper在实际环境中完成SLAM。</li>
+<li>让Mini Pupper在实际环境中进行导航。</li>
+</ol>
+<h2><a id="_31"></a>课程细节</h2>
+<p>本课程将使用以下组件：</p>
+<ul>
+<li><a href="https://ubuntu.com/">Ubuntu</a>是一个以桌面应用为主的Linux操作系统，具有良好的版本维护和社区环境</li>
+<li><a href="https://www.ros.org/">ROS</a>是一个机器人通用的开发的平台，可帮助您方便地构建机器人应用程序</li>
+<li><a href="http://wiki.ros.org/rviz/UserGuide">Rviz</a>是ROS体系下的 3D 数据可视化工具</li>
+</ul>
+<p>这个教程分为四个任务：</p>
+<ol>
+<li>配置环境</li>
+<li>用键盘控制真实世界的Mini Pupper</li>
+<li>Mini Pupper在真实世界的SLAM</li>
+<li>Mini Pupper在真实世界的导航</li>
+</ol>
+<p>每个任务都有详细的步骤指导，你可以按照步骤完成课程。</p>
+<h2><a id="_47"></a>准备材料</h2>
+<p>在开始这个教程之前，你需要准备以下材料：</p>
+<ol>
+<li>一台装有Ubuntu 22.04和ROS2 Humble的PC。</li>
+<li>一个真实环境的Mini Pupper，装有和Ubuntu 22.04以及ROS2 Humble。</li>
+<li>确保你的PC和Mini Pupper连接到同一个局域网并关闭防火墙功能。</li>
+</ol>
+<h1><a id="_56"></a>引言</h1>
+<p>在这个教程中，我们将学习如何使用ROS2来控制实际环境中的Mini Pupper，完成SLAM和导航任务。首先，我们需要配置我们的环境，然后我们将学习如何用键盘控制Mini Pupper。接下来，我们将让Mini Pupper在实际环境中完成SLAM任务，最后，我们将实现Mini Pupper的导航功能。</p>
+<h2><a id="_61"></a>整体步骤</h2>
+<p>这个教程将分为四个任务：</p>
+<ol>
+<li><a href="#step1">配置环境</a></li>
+<li><a href="#step2">用键盘控制真实世界的Mini Pupper</a></li>
+<li><a href="#step3">Mini Pupper在真实世界的SLAM</a></li>
+<li><a href="#step4">Mini Pupper在真实世界的导航</a></li>
+</ol>
+<p>请按照教程中的步骤完成每个任务。</p>
+<p><span id="step1"></span></p>
+<h1><a id="1_75"></a>任务1：配置环境</h1>
+<p>在开始控制Mini Pupper之前，我们需要确保我们的环境已经配置好。这个任务包括两个步骤：</p>
+<h2><a id="PC_80"></a>第一步：配置PC</h2>
+<p>PC Setup corresponds to PC (your desktop or laptop PC) for controlling Mini Pupper remotely or executing the simulator.</p>
+<h3><a id="11_ROS_2_installation_83"></a>1.1 ROS 2 installation</h3>
+<p>Please follow the <a href="https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html">installation document for ROS Humble</a> or use the <a href="https://github.com/Tiryoh/ros2_setup_scripts_ubuntu">unofficial ROS 2 installation script</a>.</p>
+<h3><a id="12_Download_the_Mini_Pupper_ROS_2__dependencies_packages_86"></a>1.2 Download the Mini Pupper ROS 2 &amp; dependencies packages</h3>
+<p>After ROS 2 installation, download the Mini Pupper ROS package in the workspace.</p>
+<pre><code class="prism language-bash"><span class="token function">mkdir</span> -p ~/ros2_ws/src
+<span class="token builtin class-name">cd</span> ~/ros2_ws/src
+<span class="token function">git</span> clone https://github.com/mangdangroboticsclub/mini_pupper_ros.git -b ros2
+vcs <span class="token function">import</span> <span class="token operator">&lt;</span> mini_pupper_ros/.minipupper.repos --recursive  <span class="token comment"># requires vcstool</span>
+</code></pre>
+<p><strong>Notes:</strong><br>
+If you haven’t installed vcstool, please install vcstool first.</p>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> <span class="token function">sh</span> -c <span class="token string">'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" &gt; /etc/apt/sources.list.d/ros-latest.list'</span>
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> <span class="token function">curl</span> <span class="token comment"># if you haven't already installed curl</span>
+<span class="token function">curl</span> -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc <span class="token operator">|</span> <span class="token function">sudo</span> apt-key <span class="token function">add</span> -
+<span class="token function">sudo</span> <span class="token function">apt-get</span> update
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> python3-vcstool
+</code></pre>
+<h3><a id="13_Build_and_install_all_ROS_packages_103"></a>1.3 Build and install all ROS packages</h3>
+<pre><code class="prism language-bash"><span class="token builtin class-name">cd</span> ~/ros2_ws
+rosdep <span class="token function">install</span> --from-paths src --ignore-src -r -y
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> ros-humble-teleop-twist-keyboard
+pip <span class="token function">install</span> transforms3d
+colcon build --symlink-install
+</code></pre>
+<h2><a id="Mini_Pupper_111"></a>第二步：配置Mini Pupper</h2>
+<p>Mini Pupper Setup corresponds to the Raspberry Pi on your Mini Pupper.</p>
+<h3><a id="21_mini_pupper_bsp_installation_113"></a>2.1 mini_pupper_bsp installation</h3>
+<p>You should first install dependencies of servos, battery monitor, and display screen.<br>
+See <a href="https://github.com/mangdangroboticsclub/mini_pupper_bsp">mini_pupper_bsp</a>.</p>
+<h3><a id="22_ROS_2_installation_117"></a>2.2 ROS 2 installation</h3>
+<p>After installing the driver software, install ROS 2. ROS 2 Humble is required.<br>
+Please follow the <a href="https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html">installation document for ROS Humble</a> or use the <a href="https://github.com/Tiryoh/ros2_setup_scripts_ubuntu">unofficial ROS 2 installation script</a>.</p>
+<h3><a id="23__Download_the_Mini_Pupper_ROS_2__dependencies_packages_121"></a>2.3  Download the Mini Pupper ROS 2 &amp; dependencies packages</h3>
+<p>After ROS 2 installation, download the Mini Pupper ROS package in the workspace.</p>
+<pre><code class="prism language-bash"><span class="token function">mkdir</span> -p ~/ros2_ws/src
+<span class="token builtin class-name">cd</span> ~/ros2_ws/src
+<span class="token function">git</span> clone https://github.com/mangdangroboticsclub/mini_pupper_ros.git -b ros2
+vcs <span class="token function">import</span> <span class="token operator">&lt;</span> mini_pupper_ros/.minipupper.repos --recursive  <span class="token comment"># requires vcstool</span>
+<span class="token comment"># compiling the gazebo and cartographer on Raspberry Pi is not recommended</span>
+<span class="token function">touch</span> mini_pupper_ros/mini_pupper_gazebo/AMENT_IGNORE
+<span class="token function">touch</span> mini_pupper_ros/mini_pupper_navigation/AMENT_IGNORE
+</code></pre>
+<p><strong>Notes:</strong><br>
+If you haven’t installed vcstool, please install vcstool first.</p>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> <span class="token function">sh</span> -c <span class="token string">'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" &gt; /etc/apt/sources.list.d/ros-latest.list'</span>
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> <span class="token function">curl</span> <span class="token comment"># if you haven't already installed curl</span>
+<span class="token function">curl</span> -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc <span class="token operator">|</span> <span class="token function">sudo</span> apt-key <span class="token function">add</span> -
+<span class="token function">sudo</span> <span class="token function">apt-get</span> update
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> python3-vcstool
+</code></pre>
+<h3><a id="24_Build_and_install_all_ROS_packages_143"></a>2.4 Build and install all ROS packages</h3>
+<pre><code class="prism language-bash"><span class="token comment"># install dependencies without unused heavy packages</span>
+<span class="token builtin class-name">cd</span> ~/ros2_ws
+rosdep <span class="token function">install</span> --from-paths src --ignore-src -r -y --skip-keys<span class="token operator">=</span>joint_state_publisher_gui --skip-keys<span class="token operator">=</span>rviz2 --skip-keys<span class="token operator">=</span>gazebo_plugins --skip-keys<span class="token operator">=</span>velodyne_gazebo_plugins
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> ros-humble-teleop-twist-keyboard
+pip <span class="token function">install</span> transforms3d
+colcon build --symlink-install
+</code></pre>
+<p><strong>Tips:</strong></p>
+<pre><code class="prism language-bash"><span class="token comment"># If the Raspberry Pi has less than 4GB memory, please try</span>
+<span class="token assign-left variable">MAKEFLAGS</span><span class="token operator">=</span>-j1 colcon build --executor sequential --symlink-install
+<span class="token comment"># instead of `colcon build --symlink-install`</span>
+</code></pre>
+<p><span id="step2"></span></p>
+<h1><a id="2Mini_Pupper_163"></a>任务2：用键盘控制真实世界的Mini Pupper</h1>
+<p>在这个任务中，我们将学习如何用键盘控制真实世界中的Mini Pupper。这个任务包括五个步骤：</p>
+<h2><a id="PCMini_PupperUbuntu2204ROS2_Humble_167"></a>第一步：检查PC和Mini Pupper上的Ubuntu22.04和ROS2 Humble的环境配置</h2>
+<p>确保你已经完成了任务1中的两个步骤，配置好了PC和Mini Pupper的环境。</p>
+<h2><a id="SSHMini_Pupper_170"></a>第二步：SSH登录Mini Pupper</h2>
+<p>在你的PC上打开一个终端，并通过SSH登录到Mini Pupper。首先需要获取你的MiniPupper的机器名和IP地址。</p>
+<h3><a id="21__172"></a>2.1 获取机器名</h3>
+<p>为Mini Pupper连接显示屏，打开终端，查看机器名。<br>
+如图2.2.1中所示的"mangdang"即为这台机器的机器名。</p>
+<p><img src="https://img-blog.csdnimg.cn/8a51a66a7e274f77a091aee2c250f376.jpeg" alt="请添加图片描述"></p>
+<h3><a id="22_IP_178"></a>2.2 获取IP地址</h3>
+<p>查看这台Mini Pupper的IP地址。<br>
+在命令行中输入</p>
+<pre><code class="prism language-bash"><span class="token function">ifconfig</span>
+</code></pre>
+<p>如图2.2.1中所示的192.168.50.13即为本机的IP地址。<br>
+<img src="https://img-blog.csdnimg.cn/92a31aa8d7d94b17bd84bea64d3a28f0.png" alt="在这里插入图片描述"></p>
+<h3><a id="23_SSH_187"></a>2.3 SSH登录</h3>
+<pre><code class="prism language-bash"><span class="token function">ssh</span> username@mini-pupper-ip-address
+</code></pre>
+<p>请将<code>username</code>和<code>mini-pupper-ip-address</code>替换为实际的用户名和IP地址。<br>
+例如：</p>
+<pre><code class="prism language-bash"><span class="token function">ssh</span> mangdang@192.168.50.13
+</code></pre>
+<h2><a id="SSHMini_Pupperbringup_199"></a>第三步：SSH启动Mini Pupper的bringup</h2>
+<p>在通过SSH登录到Mini Pupper的终端中，执行以下命令启动bringup：</p>
+<pre><code class="prism language-bash"><span class="token builtin class-name">.</span> ~/ros2_ws/install/setup.bash
+ros2 launch mini_pupper_bringup bringup.launch.py
+</code></pre>
+<p>这将启动Mini Pupper上的所有必要节点。<br>
+成功启动的节点应当没有任何报错信息，如图2.3.1和2.3.2，请查看你的命令行窗口内容。<br>
+<img src="https://img-blog.csdnimg.cn/59153ecf8df644b997f2d9d68d9838fb.jpeg" alt="请添加图片描述"></p>
+<p><img src="https://img-blog.csdnimg.cn/fc94556de1df4cc68776988886417bd6.png" alt="请添加图片描述"></p>
+<h2><a id="PCMini_Pupper_217"></a>第四步：在PC上启动Mini Pupper的键盘控制节点</h2>
+<p>在你的PC上打开另一个终端，并执行以下命令启动键盘控制节点：</p>
+<pre><code class="prism language-bash">ros2 run teleop_twist_keyboard teleop_twist_keyboard
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/bc716565b1804a8ca04e3ed2b9597667.png" alt="请添加图片描述"></p>
+<h2><a id="Mini_Pupper_227"></a>第五步：通过键盘控制真实世界的Mini Pupper</h2>
+<p>按照teleop_twist_keyboard节点的提示，使用键盘控制Mini Pupper。尝试让Mini Pupper前进、后退、左右转和停止。熟悉Mini Pupper的控制方式。<br>
+<img src="https://img-blog.csdnimg.cn/7d63f71cd0e942e2bd8c85438b26c691.gif" alt="请添加图片描述"><br>
+因为Mini Pupper的小体积，它无法以非常快的速度移动，你可以在Keyboard节点为Mini Pupper确定一个更小的移动速度。</p>
+<p><span id="step3"></span></p>
+<h1><a id="3Mini_PupperSLAM_235"></a>任务3：Mini Pupper在真实世界的SLAM</h1>
+<p>在这个任务中，我们将学习如何让Mini Pupper在真实世界中完成SLAM。这个任务包括七个步骤：</p>
+<h2><a id="PCMini_PupperUbuntu2204ROS2_Humble_240"></a>第一步：检查PC和Mini Pupper上的Ubuntu22.04和ROS2 Humble的环境配置</h2>
+<p>确保你已经完成了任务1中的两个步骤，配置好了PC和Mini Pupper的环境。</p>
+<h2><a id="SSHMini_Pupper_245"></a>第二步：SSH登录Mini Pupper</h2>
+<p>在你的PC上打开一个终端，并通过SSH登录到Mini Pupper。例如：</p>
+<pre><code class="prism language-bash"><span class="token function">ssh</span> username@mini-pupper-ip-address
+</code></pre>
+<p>请将<code>username</code>和<code>mini-pupper-ip-address</code>替换为实际的用户名和IP地址。</p>
+<h2><a id="SSHMini_Pupperbringup_256"></a>第三步：SSH启动Mini Pupper的bringup</h2>
+<p>在通过SSH登录到Mini Pupper的终端中，执行以下命令启动bringup：</p>
+<pre><code class="prism language-bash"><span class="token builtin class-name">.</span> ~/ros2_ws/install/setup.bash
+ros2 launch mini_pupper_bringup bringup.launch.py
+</code></pre>
+<p>这将启动Mini Pupper上的所有必要节点。</p>
+<h2><a id="PCMini_Pupper_268"></a>第四步：在PC上启动Mini Pupper的键盘控制节点</h2>
+<p>在你的PC上打开另一个终端，并执行以下命令启动键盘控制节点：</p>
+<pre><code class="prism language-bash">ros2 run teleop_twist_keyboard teleop_twist_keyboard
+</code></pre>
+<p>现在你可以使用键盘控制Mini Pupper。</p>
+<h2><a id="PCMini_PupperSLAM_279"></a>第五步：在PC上启动Mini Pupper的SLAM节点</h2>
+<p>在你的PC上打开另一个终端，并执行以下命令启动SLAM节点，如图3.5.1：</p>
+<pre><code class="prism language-bash"><span class="token builtin class-name">.</span> ~/ros2_ws/install/setup.bash
+ros2 launch mini_pupper_navigation slam.launch.py
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/c33dd835ca234302ac8e3ab008fec3fa.png" alt="在这里插入图片描述"></p>
+<p>这将启动Mini Pupper的SLAM过程，如图3.5.2。<br>
+<img src="https://img-blog.csdnimg.cn/89d991f4ce6c44df9105d90700f9fd77.png" alt="在这里插入图片描述"></p>
+<h2><a id="Mini_PupperSLAM_294"></a>第六步：控制Mini Pupper完成SLAM</h2>
+<p>使用任务2中学到的键盘控制方法，操控Mini Pupper在环境中移动。让它在房间里走动，直到地图显示完整。<br>
+<img src="https://img-blog.csdnimg.cn/d90a084ee8d34a33a0c60fe550fc6998.gif" alt="请添加图片描述"></p>
+<h2><a id="SLAM_300"></a>第七步：保存SLAM地图</h2>
+<p>当你认为地图已经足够完整时，执行以下命令保存地图：</p>
+<pre><code class="prism language-bash">ros2 <span class="token function">service</span> call /finish_trajectory cartographer_ros_msgs/srv/FinishTrajectory <span class="token string">"{trajectory_id: 0}"</span>
+ros2 <span class="token function">service</span> call /write_state cartographer_ros_msgs/srv/WriteState <span class="token string">"{filename: '<span class="token variable">${<span class="token environment constant">HOME</span>}</span>/mymap.pbstream'}"</span>
+ros2 run nav2_map_server map_saver_cli -f <span class="token variable">${<span class="token environment constant">HOME</span>}</span>/mymap
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/a1c7486106bc4c06883fea28401dda7a.jpeg" alt="请添加图片描述"></p>
+<p>如图3.7.1，这将把地图保存到你的PC上。</p>
+<p><span id="step4"></span></p>
+<h1><a id="4Mini_Pupper_317"></a>任务4：Mini Pupper在真实世界的导航</h1>
+<p>在这个任务中，我们将学习如何让Mini Pupper在真实世界中进行导航。这个任务包括七个步骤：</p>
+<h2><a id="PCMini_PupperUbuntu2204ROS2_Humble_322"></a>第一步：检查PC和Mini Pupper上的Ubuntu22.04和ROS2 Humble的环境配置</h2>
+<p>确保你已经完成了任务1中的两个步骤，配置好了PC和Mini Pupper的环境。</p>
+<h2><a id="SSHMini_Pupper_327"></a>第二步：SSH登录Mini Pupper</h2>
+<p>在你的PC上打开一个终端，并通过SSH登录到Mini Pupper。例如：</p>
+<pre><code class="prism language-bash"><span class="token function">ssh</span> username@mini-pupper-ip-address
+</code></pre>
+<p>请将<code>username</code>和<code>mini-pupper-ip-address</code>替换为实际的用户名和IP地址。</p>
+<h2><a id="SSHMini_Pupperbringup_338"></a>第三步：SSH启动Mini Pupper的bringup</h2>
+<p>在通过SSH登录到Mini Pupper的终端中，执行以下命令启动bringup：</p>
+<pre><code class="prism language-bash"><span class="token builtin class-name">.</span> ~/ros2_ws/install/setup.bash
+ros2 launch mini_pupper_bringup bringup.launch.py
+</code></pre>
+<p>这将启动Mini Pupper上的所有必要节点。</p>
+<h2><a id="_350"></a>第四步：替换地图文件</h2>
+<p>在任务3中创建的地图需要放置到<code>mini_pupper_navigation</code>包中的地图文件夹中。在你的PC上执行以下命令进行替换：</p>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> <span class="token function">cp</span> ~/mymap.pgm ~/ros2_ws/src/mini_pupper_ros/mini_pupper_navigation/maps/mymap.pgm
+<span class="token function">sudo</span> <span class="token function">cp</span> ~/mymap.pbstream ~/ros2_ws/src/mini_pupper_ros/mini_pupper_navigation/maps/mymap.pbstream
+<span class="token function">sudo</span> <span class="token function">cp</span> ~/mymap.yaml ~/ros2_ws/src/mini_pupper_ros/mini_pupper_navigation/maps/mymap.yaml
+</code></pre>
+<p>请确保已经替换了上述文件，如果你不确定，你可以打开<code>mini_pupper_navigation</code>包中的地图文件夹确认是否有这个文件。</p>
+<h2><a id="PCMini_PupperLocalization_363"></a>第五步：在PC上启动Mini Pupper的Localization节点</h2>
+<p>在你的PC上打开一个终端，并执行以下命令启动Localization节点：</p>
+<pre><code class="prism language-bash"><span class="token builtin class-name">.</span> ~/ros2_ws/install/setup.bash
+ros2 launch mini_pupper_navigation localization.launch.py
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/2b63b329903d44f7b163ca47e61eba66.png" alt="请添加图片描述"></p>
+<p>如图4.6.1，这将启动Mini Pupper的定位过程。</p>
+<h2><a id="PCMini_PupperNavigation_377"></a>第六步：在PC上启动Mini Pupper的Navigation节点</h2>
+<p>在你的PC上打开另一个终端，并执行以下命令启动Navigation节点：</p>
+<pre><code class="prism language-bash"><span class="token builtin class-name">.</span> ~/ros2_ws/install/setup.bash
+ros2 launch mini_pupper_navigation navigation.launch.py
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/89b6acecb1254632962a54f9d48a116e.png" alt="在这里插入图片描述"></p>
+<p>如图4.7.1，这将启动Mini Pupper的导航过程。</p>
+<h2><a id="Rviz2D_Goal_Pose_390"></a>第七步：在Rviz中用2D Goal Pose发布要去的位置</h2>
+<p>现在，你可以在Rviz中为Mini Pupper设置目标点。在Rviz窗口中选择"2D Goal Pose"工具，然后在地图上单击并拖动以设置目标位置和方向。Mini Pupper将自动规划路径并导航到指定的目标位置。<br>
+<img src="https://img-blog.csdnimg.cn/aa972addd02844b38f91f5737080a2b4.gif" alt="请添加图片描述"></p>
+<h1><a id="_396"></a>总结</h1>
+
+<table>
+<thead>
+<tr>
+<th>知识点</th>
+<th>内容</th>
+<th>了解</th>
+<th>熟悉</th>
+<th>掌握</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PC和Mini Pupper环境配置</td>
+<td>配置环境并确保PC和Mini Pupper之间的通信</td>
+<td></td>
+<td>✔</td>
+<td></td>
+</tr>
+<tr>
+<td>Mini Pupper控制</td>
+<td>用键盘控制Mini Pupper移动</td>
+<td></td>
+<td>✔</td>
+<td></td>
+</tr>
+<tr>
+<td>SLAM</td>
+<td>使用SLAM生成地图并保存</td>
+<td></td>
+<td></td>
+<td>✔</td>
+</tr>
+<tr>
+<td>导航</td>
+<td>让Mini Pupper根据SLAM生成的地图进行导航</td>
+<td></td>
+<td></td>
+<td>✔</td>
+</tr>
+</tbody>
+</table><p>假设您已经完成了本教程中的所有任务，并成功地掌握了Mini Pupper在实际环境中的控制、SLAM和导航。那么，您已经具备了处理实际机器人控制和导航任务所需的基本知识和技能。此外，本教程涉及的许多概念和工具（如ROS、Rviz等）也是机器人控制和仿真领域中的核心技术和工具。因此，您可以将这些知识和技能应用于其他机器人项目和任务中，进一步提高自己在机器人领域的专业技能和水平。同时，您也可以参考本教程中提到的资源和背景信息，继续学习和深入了解机器人控制和仿真的相关知识。</p>
+<h1><a id="_406"></a>背景信息和资源</h1>
+<p>本教程基于以下资源编写：</p>
+<ul>
+<li>
+<p><a href="https://ubuntu.com/">Ubuntu官网</a>：Ubuntu是一种流行的Linux操作系统，本课程需要使用Ubuntu 22.04版本。</p>
+</li>
+<li>
+<p><a href="https://www.ros.org/">ROS官网</a>：ROS是机器人领域中的一个流行的软件平台，本课程需要使用ROS2 Humble版本。</p>
+</li>
+<li>
+<p><a href="http://wiki.ros.org/rviz/UserGuide">Rviz官方用户指南</a>：Rviz是ROS下的3D可视化工具，本课程中需要使用Rviz进行可视化操作。</p>
+</li>
+<li>
+<p><a href="https://answers.ros.org/questions/">ROS Answers</a>：ROS Answers是ROS社区提供的一个问答平台，您可以在这里搜索和提交有关ROS的问题。</p>
+</li>
+<li>
+<p><a href="https://github.com/mangdangroboticsclub/mini_pupper_ros/tree/ros2">Mini Pupper在GitHub上的源代码和README</a>：这个GitHub存储库包含Mini Pupper机器人的ROS2源代码和其他资源。<br>
+如果你不清楚教程的一些步骤，你也可以参考源代码仓库的README。</p>
+</li>
+</ul>
+<p><strong>版权信息：教材尚未完善，此处预留版权信息处理方式</strong><br>
+mini pupper相关内容可访问：<a href="https://github.com/mangdangroboticsclub">https://github.com/mangdangroboticsclub</a></p>
+</div>
+</body>
+
+</html>

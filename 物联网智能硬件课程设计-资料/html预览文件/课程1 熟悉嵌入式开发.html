@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课程1 熟悉嵌入式开发</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1><a id="1__0"></a>课程1 熟悉嵌入式开发</h1>
+<h2><a id="_3"></a>课程概述</h2>
+<p>在这个教程中，我们将学习如何使用Python编程控制树莓派板载LED灯闪烁，通过Linux文件的读写操作，周期性地改变树莓派状态指示灯的亮灭状态，使之发生周期为一秒的持续明暗闪烁。</p>
+<h2><a id="_8"></a>关于课程</h2>
+<p>按照规划，本课程需要花费大约45分钟来完成，目标受众为四足机器人开发爱好者。</p>
+<p><strong>注意</strong> 本课程是基于<a href="https://www.mangdang.net/">Mangdang</a>的Mini Pupper系列产品搭建的。本课程涉及的源代码托管在Github，你可以<a href="https://github.com/mangdangroboticsclub/mini_pupper_ros/tree/ros2">点击此处访问</a>。</p>
+<h2><a id="_15"></a>学习目标</h2>
+<p>在完成这个教程后，你将能够：</p>
+<ol>
+<li>通过背景知识学习，了解四足机器人mini pupper搭载的微型控制计算机：树莓派。</li>
+<li>通过对树莓派板载LED灯的状态读写控制，熟悉树莓派本身的操作及Linux系统中文件的读写。</li>
+<li>掌握常见函数time.sleep()的用法。</li>
+</ol>
+<h2><a id="_24"></a>课程细节</h2>
+<p>本课程将使用以下组件：</p>
+<ul>
+<li>树莓派4B</li>
+</ul>
+<p>这个教程分为以下几个任务：</p>
+<ol>
+<li>学习实验的基本知识</li>
+<li>编写Python程序实现LED灯闪烁</li>
+<li>运行程序，观察效果</li>
+</ol>
+<h2><a id="_37"></a>准备材料</h2>
+<p>在开始这个教程之前，你需要准备以下材料：</p>
+<ul>
+<li>一台安装了Python的树莓派4B</li>
+</ul>
+<h1><a id="_44"></a>引言</h1>
+<p>在这个教程中，我们将学习如何使用Python编程控制树莓派板载LED灯闪烁，通过Linux文件的读写操作，周期性地改变树莓派状态指示灯的亮灭状态，使之发生周期为一秒的持续明暗闪烁。</p>
+<h2><a id="_49"></a>整体步骤</h2>
+<p>这个教程将分为以下几个任务：</p>
+<ol>
+<li>学习实验的基本知识</li>
+<li>编写Python程序实现LED灯闪烁</li>
+<li>运行程序，观察效果</li>
+</ol>
+<p>请按照教程中的步骤完成每个任务。</p>
+<h1><a id="1_60"></a>任务1：学习实验的基本知识</h1>
+<p>在这个任务中，你将了解树莓派的基本知识和应用场景、Linux系统中的文件读写、部分基本的Python函数。</p>
+<h3><a id="1__64"></a>1. 什么是树莓派？</h3>
+<p>树莓派（Raspberry Pi）是英国树莓派基金会开发的低成本微型单板计算机，硬件上配置有SoC (片上系统)，具有 GPU和RAM并支持有线、无线连接方案。值得称道的是，树莓派有着完善的社区与软件支持，这极大地方便了机器人开发初学者的入门学习。<br>
+树莓派在具备计算机基本功能的同时，保持着一张卡片的大小，这意味着你可以简单便捷地搭建自己的机器人编程平台，并将这台微型计算机部署在小巧可爱的四足机器狗mini pupper上。</p>
+<p><img src="https://img-blog.csdnimg.cn/570729ab6b7149d5ba7de76a9a1777d7.png" alt="请添加图片描述"><br>
+<strong>图片1：树莓派4B</strong><br>
+<a href="https://www.raspberrypi.com/">参考链接：树莓派</a></p>
+<h3><a id="2__72"></a>2. 树莓派状态指示灯</h3>
+<p>在树莓派4B上，状态指示灯对应的文件如下，通过对Linux系统中对应文件的读写操作，可以改变状态指示灯的亮灭状态。</p>
+<pre><code class="prism language-bash"><span class="token comment">#	树莓派4B状态灯</span>
+/sys/class/leds/led0/brightness	<span class="token comment">#	灯1二进制亮灭开关</span>
+/sys/class/leds/led1/brightness	<span class="token comment">#	灯2二进制亮灭开关</span>
+</code></pre>
+<p>本实例中的使用：</p>
+<pre><code class="prism language-python">status_led <span class="token operator">=</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'/sys/class/leds/led1/brightness'</span><span class="token punctuation">,</span> <span class="token string">'wb'</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+</code></pre>
+<p><strong>图片2：树莓派板载的LED灯</strong></p>
+<h3><a id="3_Python_open_87"></a>3. Python open()函数的用法</h3>
+<p>python open() 函数用于打开一个文件，在Linux中，相当多的操作是通过对文件的读写完成的。</p>
+<pre><code class="prism language-python">varible_name <span class="token operator">=</span> <span class="token builtin">open</span><span class="token punctuation">(</span>file_name<span class="token punctuation">,</span>mode<span class="token punctuation">,</span>buffering<span class="token punctuation">)</span>
+<span class="token comment">#	name : 要访问的文件名，需以字符串形式表现，比如'/sys/class/leds/led1/brightness'</span>
+<span class="token comment">#	mode : 打开文件的模式，写入的模式为：'wb' 意为以二进制方式写入</span>
+<span class="token comment">#	buffering ：缓冲，为了不调用close方法，实现无缓冲写入，此处为：0</span>
+</code></pre>
+<p>本实例中的使用：</p>
+<pre><code class="prism language-python">status_led <span class="token operator">=</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'/sys/class/leds/led1/brightness'</span><span class="token punctuation">,</span> <span class="token string">'wb'</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+</code></pre>
+<p><a href="https://docs.python.org/zh-cn/3/library/functions.html?highlight=open#open">参考链接：Python open（）函数</a></p>
+<h3><a id="4_Python_sleep_102"></a>4. Python sleep()函数的用法</h3>
+<p>python sleep()函数推迟调用线程的运行，可以实现延时功能，这使得LED灯在改变状态后可以保持一段时间再发生下一次状态的改变。<br>
+调用sleep()函数需首先引入time库的sleep函数。</p>
+<pre><code class="prism language-python"><span class="token keyword">from</span> time <span class="token keyword">import</span> sleep
+<span class="token comment">#	引入time库的sleep函数</span>
+</code></pre>
+<pre><code class="prism language-python">time<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span>time<span class="token punctuation">)</span>
+<span class="token comment">#	暂缓延时，长达time</span>
+</code></pre>
+<p>本实例中的使用：</p>
+<pre><code class="prism language-python"><span class="token keyword">from</span> time <span class="token keyword">import</span> sleep	<span class="token comment">#	在文件头引入time库的sleep函数</span>
+sleep<span class="token punctuation">(</span><span class="token number">0.5</span><span class="token punctuation">)</span>	<span class="token comment">#	用于延时，保持灯的状态</span>
+</code></pre>
+<p><a href="https://docs.python.org/zh-cn/3/library/time.html?highlight=sleep#time.sleep">参考链接：Python time.sleep（）函数</a></p>
+<h3><a id="5__121"></a>5. 对文件的写入</h3>
+<p>python的file.write()函数用于向文件中写入指定的字符串。<br>
+在文件关闭以及缓冲区刷新前，字符串是暂未写入文件，而是存在缓冲区里，为了使树莓派快速改变灯的亮灭状态，采用了无缓冲写入，因此open()的buffering为0，实现无缓冲写入。<br>
+当文件使用二进制写入时，需要使用encode()方式转为bytes形式，或者在其前加b。</p>
+<pre><code class="prism language-python">status_led<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token string">b'1'</span><span class="token punctuation">)</span>	<span class="token comment">#	LED熄灭 b为指定二进制</span>
+status_led<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token string">b'0'</span><span class="token punctuation">)</span> 	<span class="token comment">#	LED开启</span>
+</code></pre>
+<h1><a id="2PythonLED_131"></a>任务2：编写Python程序实现LED灯闪烁</h1>
+<p>在这个任务中，你将使用Python编程实现树莓派板载LED灯闪烁。</p>
+<h2><a id="Python_136"></a>第一步：创建Python程序</h2>
+<p>首先，在树莓派上创建一个新的Python文件，命名为<code>led_blink.py</code>。</p>
+<h2><a id="_141"></a>第二步：编写程序</h2>
+<p>打开<code>led_blink.py</code>文件，编写以下代码：</p>
+<pre><code class="prism language-python"><span class="token comment">#!/usr/bin/python</span>
+<span class="token comment">#coding:utf-8</span>
+<span class="token comment">#	led_blink.py </span>
+<span class="token comment">#	使树莓派状态指示灯的亮灭状态周期性地改变，发生周期为一秒的持续明暗闪烁。</span>
+
+<span class="token keyword">from</span> time <span class="token keyword">import</span> sleep
+status_led <span class="token operator">=</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'/sys/class/leds/led1/brightness'</span><span class="token punctuation">,</span> <span class="token string">'wb'</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token comment">#	mini pupper 默认禁用了开启后的指示灯，如led1无法闪烁，此处可改为led0</span>
+<span class="token comment">#	如果你希望启用指示灯，请修改/boot/firmware/config.txt</span>
+<span class="token comment">#	修改config.txt的具体方法可查看课程的进阶参考文档中实例1部分</span>
+<span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+    status_led<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token string">b'0'</span><span class="token punctuation">)</span>	<span class="token comment">#	Turn on</span>
+    sleep<span class="token punctuation">(</span><span class="token number">0.5</span><span class="token punctuation">)</span>
+    status_led<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token string">b'1'</span><span class="token punctuation">)</span>	<span class="token comment">#	Turn off</span>
+    sleep<span class="token punctuation">(</span><span class="token number">0.5</span><span class="token punctuation">)</span>
+</code></pre>
+<h1><a id="3_163"></a>任务3：运行程序，观察效果</h1>
+<p>现在，你已经完成了Python程序的编写。接下来，我们将运行程序，观察LED灯闪烁效果。</p>
+<p>在led_blink.py的目录下执行以下命令：</p>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> python led_blink.py
+</code></pre>
+<p>此时应观察到树莓派状态指示灯的亮灭状态周期性地改变，发生周期为一秒的持续明暗闪烁。</p>
+<h1><a id="_175"></a>总结</h1>
+<p>经过本知识点的学习和实验操作，你应该能达到以下水平：</p>
+
+<table>
+<thead>
+<tr>
+<th>知识点</th>
+<th>内容</th>
+<th>了解</th>
+<th>熟悉</th>
+<th>掌握</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>树莓派</td>
+<td>树莓派的来历、用途及基本硬件性能</td>
+<td>✔</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>树莓派</td>
+<td>树莓派的状态指示灯</td>
+<td>✔</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>Linux的文件读写</td>
+<td></td>
+<td>✔</td>
+<td></td>
+</tr>
+<tr>
+<td>语言</td>
+<td>延时函数time.sleep()的用法</td>
+<td></td>
+<td></td>
+<td>✔</td>
+</tr>
+</tbody>
+</table><p>恭喜你完成了这个教程！现在，你已经掌握了如何使用Python编程控制树莓派板载LED灯闪烁。你可以尝试使用这个技能为你的四足机器人项目添加更多有趣的功能。祝你编程愉快！</p>
+<h1><a id="_187"></a>背景信息和资源</h1>
+<p>本教程基于以下资源编写：<br>
+<a href="https://www.raspberrypi.com/">参考链接：树莓派</a><br>
+<a href="https://docs.python.org/zh-cn/3/library/functions.html?highlight=open#open">参考链接：Python open（）函数</a><br>
+<a href="https://docs.python.org/zh-cn/3/library/time.html?highlight=sleep#time.sleep">参考链接：Python time.sleep（）函数</a><br>
+版权信息：教材尚未完善，此处预留版权信息处理方式<br>
+mini pupper相关内容可访问：https://github.com/mangdangroboticsclub</p>
+</div>
+</body>
+
+</html>

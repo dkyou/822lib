@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课程2 嵌入式开发平台的控制</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1><a id="2__1"></a>课程2 嵌入式开发平台的控制</h1>
+<h2><a id="_4"></a>课程概述</h2>
+<p>在这个教程中，我们将学习如何使用树莓派GPIO控制外部LED灯的闪烁。</p>
+<h2><a id="_9"></a>关于课程</h2>
+<p>按照规划，本课程需要花费大约45分钟来完成，目标受众为四足机器人开发爱好者。</p>
+<p><strong>注意</strong> 本课程是基于<a href="https://www.mangdang.net/">Mangdang</a>的Mini Pupper系列产品搭建的。本课程涉及的源代码托管在Github，你可以<a href="https://github.com/mangdangroboticsclub/mini_pupper_ros/tree/ros2">点击此处访问</a>。</p>
+<h2><a id="_16"></a>学习目标</h2>
+<p>在完成这个教程后，你将能够：</p>
+<ol>
+<li>通过背景知识学习，了解四足机器人mini pupper搭载的微型控制计算机：树莓派。</li>
+<li>通过树莓派GPIO操作的学习，熟悉GPIO的读写控制。</li>
+<li>通过外部LED灯的亮灭控制，熟悉树莓派对外界信号的读取与输出。</li>
+</ol>
+<h2><a id="_25"></a>课程细节</h2>
+<p>本课程将使用以下组件：</p>
+<ul>
+<li>树莓派</li>
+<li>LED模块</li>
+<li>杜邦线</li>
+</ul>
+<p>这个教程分为以下任务：</p>
+<ol>
+<li>学习实验知识</li>
+<li>硬件连接</li>
+<li>编写Python程序 led_blink_GPIO.py</li>
+<li>运行程序，观察效果</li>
+</ol>
+<h2><a id="_41"></a>准备材料</h2>
+<p>在开始这个教程之前，你需要准备以下材料：</p>
+<ul>
+<li>一台树莓派</li>
+<li>一个LED模块</li>
+<li>几根杜邦线</li>
+</ul>
+<h1><a id="_50"></a>引言</h1>
+<p>在这个教程中，我们将学习如何使用Python语言编程，通过树莓派上GPIO的控制，周期性地改变外部LED灯的亮灭状态，使之发生周期为一秒的持续明暗闪烁。</p>
+<h2><a id="_55"></a>整体步骤</h2>
+<p>这个教程将分为以下几个任务：</p>
+<ol>
+<li>学习实验知识</li>
+<li>硬件连接</li>
+<li>编写Python程序 led_blink_GPIO.py</li>
+<li>运行程序，观察效果</li>
+</ol>
+<p>请按照教程中的步骤完成每个任务。</p>
+<h2><a id="1_67"></a>任务1：学习实验知识</h2>
+<h3><a id="1__70"></a>1. 什么是树莓派？</h3>
+<p>树莓派（Raspberry Pi）是英国树莓派基金会开发的低成本微型单板计算机，硬件上配置有SoC (片上系统)，具有 GPU和RAM并支持有线、无线连接方案。值得称道的是，树莓派有着完善的社区与软件支持，这极大地方便了机器人开发初学者的入门学习。<br>
+树莓派在具备计算机基本功能的同时，保持着一张卡片的大小，这意味着你可以简单便捷地搭建自己的机器人编程平台，并将这台微型计算机部署在小巧可爱的四足机器狗mini pupper上。<br>
+<img src="https://img-blog.csdnimg.cn/570729ab6b7149d5ba7de76a9a1777d7.png" alt="请添加图片描述"><br>
+<strong>图片1：树莓派4B</strong><br>
+<a href="https://www.raspberrypi.com/">参考链接：树莓派</a></p>
+<h3><a id="2_GPIO_77"></a>2. 什么是GPIO？</h3>
+<p>树莓派上有丰富的接口，这些接口使得树莓派能够方便地与外部设备进行通信及控制，例如USB、CAMERA、GPIO等。<br>
+其中的GPIO接口，全称为General Purpose Input Output，意为通用型输入输出口，树莓派上的GPIO接口可以用于输入、输出或其他特殊功能。<br>
+通过GPIO，可以让树莓派和不同的外部模块组件进行交互，例如按钮、蜂鸣器、舵机等。</p>
+<p><img src="https://img-blog.csdnimg.cn/330a44806add457892ece057cb4425b7.png" alt="在这里插入图片描述"><strong>图片2：GPIO接口图</strong></p>
+<h3><a id="3_GPIO_84"></a>3. 树莓派GPIO引脚图</h3>
+<p>在命令行中查看树莓派GPIO引脚图。</p>
+<pre><code class="prism language-bash">pinout
+<span class="token comment">#	如果你希望学习在命令行中对GPIO口进行更复杂的操作，可查看课程的进阶参考文档中实例2部分</span>
+</code></pre>
+<p>你将会看到<br>
+<strong>图片3：pinout指令的输出结果</strong><br>
+<a href="https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio-and-the-40-pin-header">参考链接：树莓派4B引脚图</a></p>
+<h3><a id="4_RPiGPIO_97"></a>4. RPi.GPIO库的基本用法</h3>
+<pre><code class="prism language-python">GPIO<span class="token punctuation">.</span>setmode<span class="token punctuation">(</span>GPIO<span class="token punctuation">.</span>BOARD<span class="token punctuation">)</span>	<span class="token comment">#	初始化GPIO引脚编码方式，需放在代码正式开始处</span>
+<span class="token comment">#	GPIO引脚有多种编码方式，比如BCM、wiringPi、BOARD等,方便起见，课程均采用BOARD编码模式</span>
+</code></pre>
+<pre><code class="prism language-python">GPIO<span class="token punctuation">.</span>setup<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>OUT<span class="token punctuation">)</span>	<span class="token comment">#	初始化GPIO引脚设置，需放在代码正式开始处</span>
+GPIO<span class="token punctuation">.</span>setup<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>IN<span class="token punctuation">)</span>	<span class="token comment">#	12为引脚号 GPIO.IN或者GPIO.OU为输入输出模式</span>
+</code></pre>
+<pre><code class="prism language-python"><span class="token keyword">print</span><span class="token punctuation">(</span>GPIO<span class="token punctuation">.</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">)</span><span class="token punctuation">)</span>	<span class="token comment">#	GPIO.input查看GPIO输入的电平信号</span>
+<span class="token comment">#	GPIO.HIGH为高电平 ，GPIO.LOW为低电平 也可用于条件判断作其他操作</span>
+</code></pre>
+<pre><code class="prism language-python"><span class="token comment">#	GPIO.output向端口发送高低电平信号</span>
+GPIO<span class="token punctuation">.</span>output<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>HIGH<span class="token punctuation">)</span>	<span class="token comment">#	此处以12号端口为例</span>
+GPIO<span class="token punctuation">.</span>output<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>LOW<span class="token punctuation">)</span>
+</code></pre>
+<pre><code class="prism language-python">GPIO<span class="token punctuation">.</span>cleanup<span class="token punctuation">(</span><span class="token punctuation">)</span>	<span class="token comment">#	在使用完GPIO后要作清理，避免后续引脚被占用</span>
+</code></pre>
+<p><a href="https://pypi.org/project/RPi.GPIO/">参考链接：Python RPi.GPIO库</a><br>
+<a href="https://sourceforge.net/p/raspberry-gpio-python/wiki/Inputs/">参考链接：GPIO  Input详解</a></p>
+<h3><a id="5_mini_pupperLED_125"></a>5. mini pupper学习套件-LED模块的使用</h3>
+<p>mini pupper学习套件中的LED模块自带板载限流电阻，能够保护LED模块。<br>
+接线如下：</p>
+
+<table>
+<thead>
+<tr>
+<th>引脚</th>
+<th>作用</th>
+<th>树莓派对应口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GND</td>
+<td>接地</td>
+<td>GND口</td>
+</tr>
+<tr>
+<td>R</td>
+<td>红灯正极</td>
+<td>PWM口</td>
+</tr>
+<tr>
+<td>G</td>
+<td>绿灯正极</td>
+<td>PWM口</td>
+</tr>
+<tr>
+<td>B</td>
+<td>蓝灯正极</td>
+<td>PWM口</td>
+</tr>
+</tbody>
+</table><p><img src="https://img-blog.csdnimg.cn/e6f3189c9f844f288c6ab4934fdbd367.jpeg" alt="在这里插入图片描述"></p>
+<h2><a id="3LED%0A2_137"></a><strong>图片3：LED模块</strong><br>
+任务2：硬件连接</h2>
+<ol>
+<li>
+<p>将灯的任一正极（R/G/B/Y）接入树莓派上的PWM端口（例如33号端口）<br>
+树莓派的GPIO中仅有部分为PWM口，你可以通过查看树莓派GPIO的引脚图来确认哪个端口是PWM端。</p>
+</li>
+<li>
+<p>将灯的GND端接入树莓派上的GND端口（例如34号端口）<br>
+你可以通过查看树莓派GPIO的引脚图来确认哪个端口是GND端。<br>
+<img src="https://img-blog.csdnimg.cn/9f34165bdb654134a620c8a2d8a8e0bb.jpeg" alt="在这里插入图片描述"></p>
+</li>
+</ol>
+<h2><a id="4%0A3Python_led_blink_GPIOpy_147"></a><strong>图片4：硬件接线</strong><br>
+任务3：编写Python程序 led_blink_GPIO.py</h2>
+<pre><code class="prism language-python"><span class="token comment">#!/usr/bin/python</span>
+<span class="token comment"># coding:utf-8</span>
+<span class="token comment"># led_blink_GPIO.py</span>
+<span class="token comment"># 使树莓派GPIO外接的LED灯的亮灭状态周期性地改变，发生周期为两秒的持续明暗闪烁。</span>
+
+<span class="token keyword">import</span> RPi<span class="token punctuation">.</span>GPIO <span class="token keyword">as</span> GPIO
+<span class="token keyword">import</span> time
+
+<span class="token comment"># GPIO初始化</span>
+LED <span class="token operator">=</span> <span class="token number">33</span>
+period <span class="token operator">=</span> <span class="token number">2</span>
+GPIO<span class="token punctuation">.</span>setmode<span class="token punctuation">(</span>GPIO<span class="token punctuation">.</span>BOARD<span class="token punctuation">)</span>  <span class="token comment"># 初始化GPIO引脚编码方式</span>
+GPIO<span class="token punctuation">.</span>setup<span class="token punctuation">(</span>LED<span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>OUT<span class="token punctuation">)</span>
+<span class="token comment"># 如果你需要忽视引脚复用警告，请调用GPIO.setwarnings(False)</span>
+<span class="token comment"># GPIO.setwarnings(False)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'预设置完成，开始闪烁，端口为%d，周期为%d秒。'</span> <span class="token operator">%</span> <span class="token punctuation">(</span>LED<span class="token punctuation">,</span> period<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+    GPIO<span class="token punctuation">.</span>output<span class="token punctuation">(</span>LED<span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>HIGH<span class="token punctuation">)</span>
+    time<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span>period<span class="token operator">/</span><span class="token number">2</span><span class="token punctuation">)</span>
+    GPIO<span class="token punctuation">.</span>output<span class="token punctuation">(</span>LED<span class="token punctuation">,</span> GPIO<span class="token punctuation">.</span>LOW<span class="token punctuation">)</span>
+    time<span class="token punctuation">.</span>sleep<span class="token punctuation">(</span>period<span class="token operator">/</span><span class="token number">2</span><span class="token punctuation">)</span>
+
+GPIO<span class="token punctuation">.</span>cleanup<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<h2><a id="4_178"></a>任务4：运行程序，观察效果</h2>
+<p>在led_blink_GPIO.py的目录下执行以下命令：</p>
+<pre><code class="prism language-bash"><span class="token function">sudo</span> python led_blink_GPIO.py
+</code></pre>
+<p>此时应观察到树莓派状态指示灯的亮灭状态周期性地改变，发生周期为一秒的持续明暗闪烁。</p>
+<h2><a id="5LED%0A_186"></a><strong>图片5：外部LED持续明暗闪烁</strong><br>
+总结</h2>
+<p>经过本知识点的学习和实验操作，你应该能达到以下水平：</p>
+
+<table>
+<thead>
+<tr>
+<th>知识点</th>
+<th>内容</th>
+<th>了解</th>
+<th>熟悉</th>
+<th>掌握</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>树莓派</td>
+<td>树莓派的来历、用途及基本硬件性能</td>
+<td>✔</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>树莓派</td>
+<td>树莓派的GPIO</td>
+<td>✔</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>GPIO</td>
+<td>RPi.GPIO库的用法</td>
+<td></td>
+<td>✔</td>
+<td></td>
+</tr>
+<tr>
+<td>硬件</td>
+<td>mini pupper学习套件的LED模块的使用</td>
+<td></td>
+<td></td>
+<td>✔</td>
+</tr>
+</tbody>
+</table><h1><a id="_199"></a>背景信息和资源</h1>
+<p>本教程基于以下资源编写：<br>
+<a href="https://www.raspberrypi.com/">参考链接：树莓派</a><br>
+<a href="https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio-and-the-40-pin-header">参考链接：树莓派4B引脚图</a><br>
+<a href="https://pypi.org/project/RPi.GPIO/">参考链接：Python RPi.GPIO库</a><br>
+<a href="https://sourceforge.net/p/raspberry-gpio-python/wiki/Inputs/">参考链接：GPIO  Input详解</a><br>
+版权信息：教材尚未完善，此处预留版权信息处理方式<br>
+mini pupper相关内容可访问：https://github.com/mangdangroboticsclub</p>
+</div>
+</body>
+
+</html>
